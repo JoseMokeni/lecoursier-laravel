@@ -21,9 +21,9 @@ jobs:
         run: docker build -t lecoursier-laravel .
 
       - name: Push Docker Image
-        run: docker tag lecoursier-laravel ${{ secrets.DOCKER_USERNAME }}/lecoursier-laravel
-        run: docker push ${{ secrets.DOCKER_USERNAME }}/lecoursier-laravel
+        run: |
+          docker tag lecoursier-laravel ${{ secrets.DOCKER_USERNAME }}/lecoursier-laravel
+          docker push ${{ secrets.DOCKER_USERNAME }}/lecoursier-laravel
 
       - name: Logout from Docker Hub
         run: docker logout
-

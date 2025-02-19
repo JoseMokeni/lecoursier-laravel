@@ -23,7 +23,7 @@ jobs:
 
       - name: Update submodule pointer
         run: |
-          cd lecouriser-laravel
+          cd lecoursier-laravel
 
           git fetch origin
 

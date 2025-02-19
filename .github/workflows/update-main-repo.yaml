@@ -36,7 +36,7 @@ jobs:
           cd ..
 
           # Stage the submodule change
-          git add lecouriser-laravel
+          git add lecoursier-laravel
 
           # Commit the pointer update
           git commit -m "chore: update submodule pointer to commit $GITHUB_SHA"

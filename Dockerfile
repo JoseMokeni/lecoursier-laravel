@@ -1,6 +1,6 @@
 # Dockerfile for laravel application, mount the laravel application to /var/www/html
 
-FROM php:8.2.8-fpm
+FROM php:8.3-apache
 
 # Install dependencies
 RUN apt-get update && apt-get install -y \
@@ -19,6 +19,12 @@ RUN apt-get clean && rm -rf /var/lib/apt/lists/*
 
 # Install extensions
 RUN docker-php-ext-install pdo_pgsql mbstring zip exif pcntl bcmath gd
+
+# Copy virtual host configuration
+COPY ./docker/apache/vhost.conf /etc/apache2/sites-available/000-default.conf
+
+# Enable Apache modules
+RUN a2enmod rewrite
 
 # Get latest Composer
 COPY --from=composer:latest /usr/bin/composer /usr/bin/composer
@@ -48,9 +54,9 @@ USER service
 RUN composer install --no-scripts --no-autoloader
 RUN composer dump-autoload
 
-# Expose port 9000 for PHP-FPM
-EXPOSE 9000
+# Expose port 80
+EXPOSE 80
 
 # Update to start PHP-FPM instead of Apache
-CMD ["php-fpm"]
+CMD ["apache2-foreground"]
 

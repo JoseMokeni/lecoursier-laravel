@@ -14,20 +14,13 @@ services:
       - lecoursier
     volumes:
       - .:/var/www/html
+    ports:
+      - 80:80
     env_file:
       - .env
-
-  nginx:
-    image: nginx:alpine
-    container_name: nginx
-    restart: always
-    ports:
-      - "80:80"
-    networks:
-      - default
-      - lecoursier
-    volumes:
-      - .:/var/www/html
-      - ./docker/nginx/nginx.conf:/etc/nginx/nginx.conf
-    depends_on:
-      - app
+    # labels:
+    #   - "traefik.enable=true"
+    #   - "traefik.http.routers.app.rule=Host(`lecoursier.local`)"
+    #   - "traefik.http.services.app.loadbalancer.server.port=80"
+    #   - "traefik.http.routers.app.entrypoints=web"
+    #   - "traefik.docker.network=lecoursier"

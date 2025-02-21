@@ -5,9 +5,6 @@ on:
   push:
     branches:
       - staging
-  pull_request:
-    branches:
-      - staging
 
 jobs:
   push:
@@ -25,8 +22,8 @@ jobs:
 
       - name: Push Docker Image
         run: |
-          docker tag lecoursier-laravel ${{ secrets.DOCKER_USERNAME }}/lecoursier-laravel-staging:latest
-          docker tag lecoursier-laravel ${{ secrets.DOCKER_USERNAME }}/lecoursier-laravel-staging:${{ github.sha }}
+          docker tag lecoursier-laravel-staging ${{ secrets.DOCKER_USERNAME }}/lecoursier-laravel-staging:latest
+          docker tag lecoursier-laravel-staging ${{ secrets.DOCKER_USERNAME }}/lecoursier-laravel-staging:${{ github.sha }}
           docker push ${{ secrets.DOCKER_USERNAME }}/lecoursier-laravel-staging:latest
           docker push ${{ secrets.DOCKER_USERNAME }}/lecoursier-laravel-staging:${{ github.sha }}
 

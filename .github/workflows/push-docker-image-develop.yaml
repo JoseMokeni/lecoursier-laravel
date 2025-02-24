@@ -33,3 +33,29 @@ jobs:
 
       - name: Logout from Docker Hub
         run: docker logout
+
+      - name: Send success email
+        if: success()
+        uses: dawidd6/action-send-mail@v2
+        with:
+          server_address: smtp.gmail.com
+          server_port: 465
+          username: ${{ secrets.EMAIL_USERNAME }}
+          password: ${{ secrets.EMAIL_PASSWORD }}
+          subject: "Build succeeded"
+          to: "jmmokeni@gmail.com"
+          from: "GitHub Actions - Le Coursier"
+          body: "The build succeeded."
+
+      - name: Send failure email
+        if: failure()
+        uses: dawidd6/action-send-mail@v2
+        with:
+          server_address: smtp.gmail.com
+          server_port: 465
+          username: ${{ secrets.EMAIL_USERNAME }}
+          password: ${{ secrets.EMAIL_PASSWORD }}
+          subject: "Build failed"
+          to: "jmmokeni@gmail.com"
+          from: "GitHub Actions - Le Coursier"
+          body: "The build failed. Please check logs."

@@ -2,6 +2,9 @@ name: Tests
 
 on:
   workflow_call:
+    secrets:
+      - EMAIL_USERNAME
+      - EMAIL_PASSWORD
     outputs:
       test_outcome:
         description: "Test execution outcome"

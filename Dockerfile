@@ -20,6 +20,9 @@ RUN apt-get clean && rm -rf /var/lib/apt/lists/*
 # Install extensions
 RUN docker-php-ext-install pdo_pgsql mbstring zip exif pcntl bcmath gd
 
+# Install and enable xdebug
+RUN pecl install xdebug && docker-php-ext-enable xdebug
+
 # Copy virtual host configuration
 COPY ./docker/apache/vhost.conf /etc/apache2/sites-available/000-default.conf
 
@@ -44,6 +47,8 @@ USER service
 
 # Temporarily switch to root to copy code
 USER root
+# COPY ./docker/php/xdebug.ini /usr/local/etc/php/conf.d/xdebug.ini
+COPY ./docker/php/xdebug.ini /usr/local/etc/php/conf.d/xdebug.ini
 COPY . /var/www/html
 RUN chown -R service:service /var/www/html
 

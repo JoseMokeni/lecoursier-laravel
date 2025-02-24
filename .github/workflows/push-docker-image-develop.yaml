@@ -35,7 +35,7 @@ jobs:
       - name: Push Docker Image
         run: |
           docker tag lecoursier-laravel-develop ${{ secrets.DOCKER_USERNAME }}/lecoursier-laravel-develop:latest
-          docker tag lecoursier-laravel-develop ${{ secrets.DOCKER_USERNAME }}/lecoursier-laravel-develop:${{ github.sha }}
+          docker tag lecoursier-laravel-develo ${{ secrets.DOCKER_USERNAME }}/lecoursier-laravel-develop:${{ github.sha }}
           docker push ${{ secrets.DOCKER_USERNAME }}/lecoursier-laravel-develop:latest
           docker push ${{ secrets.DOCKER_USERNAME }}/lecoursier-laravel-develop:${{ github.sha }}
 

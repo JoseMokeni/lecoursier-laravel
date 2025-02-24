@@ -3,8 +3,10 @@ name: Tests
 on:
   workflow_call:
     secrets:
-      - EMAIL_USERNAME
-      - EMAIL_PASSWORD
+      EMAIL_USERNAME:
+        required: true
+      EMAIL_PASSWORD:
+        required: true
     outputs:
       test_outcome:
         description: "Test execution outcome"

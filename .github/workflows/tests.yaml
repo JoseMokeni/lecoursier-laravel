@@ -21,7 +21,7 @@ jobs:
           coverage: xdebug
 
       - name: Copy .env
-        run: php -r "file_exists('.env') || copy('.env.example', '.env');"
+        run: php -r "file_exists('.env') || copy('.env.test.actions.example', '.env');"
 
       - name: Install dependencies
         run: composer install --no-interaction --prefer-dist --optimize-autoloader

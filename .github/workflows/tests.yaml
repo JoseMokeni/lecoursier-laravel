@@ -48,7 +48,7 @@ jobs:
             echo "outcome=success" >> $GITHUB_OUTPUT
           fi
 
-      - name: Send test failure email
+            - name: Send test failure email
         if: steps.run-tests.outcome == 'failure'
         uses: dawidd6/action-send-mail@v2
         with:
@@ -58,7 +58,7 @@ jobs:
           password: ${{ secrets.EMAIL_PASSWORD }}
           subject: "❌ Tests failed - ${{ github.workflow }}"
           to: "jmmokeni@gmail.com"
-          from: "GitHub Actions - Le Coursier"
+          from: "GitHub Actions - Le Coursier <${{ secrets.EMAIL_USERNAME }}>"
           body: |
             ❌ Tests failed
 
@@ -66,8 +66,12 @@ jobs:
             - Pipeline: ${{ github.workflow }}
             - Branch: ${{ github.ref }}
             - Commit: ${{ github.sha }}
+            - Failed Step: ${{ github.job }}
+            - Error Message: ${{ steps.run-tests.outputs.stderr }}
 
             🔗 View detailed logs: https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }}
+
+            ⚠️ Please check the logs for more details on the failure.
 
       - name: Exit with test status
         if: steps.run-tests.outcome == 'failure'

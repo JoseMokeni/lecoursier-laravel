@@ -2,10 +2,16 @@ name: Tests
 
 on:
   workflow_call:
+    outputs:
+      test_outcome:
+        description: "Test execution outcome"
+        value: ${{ jobs.tests.outputs.outcome }}
 
 jobs:
   tests:
     runs-on: ubuntu-latest
+    outputs:
+      outcome: ${{ steps.set-outcome.outputs.outcome }}
     steps:
       - name: Checkout
         uses: actions/checkout@v2
@@ -29,4 +35,40 @@ jobs:
           php artisan config:clear
 
       - name: Run tests
+        id: run-tests
+        continue-on-error: true
         run: ./vendor/bin/pest --ci --coverage --min=30
+
+      - name: Set outcome
+        id: set-outcome
+        run: |
+          if [[ "${{ steps.run-tests.outcome }}" == "failure" ]]; then
+            echo "outcome=failure" >> $GITHUB_OUTPUT
+          else
+            echo "outcome=success" >> $GITHUB_OUTPUT
+          fi
+
+      - name: Send test failure email
+        if: steps.run-tests.outcome == 'failure'
+        uses: dawidd6/action-send-mail@v2
+        with:
+          server_address: smtp.gmail.com
+          server_port: 465
+          username: ${{ secrets.EMAIL_USERNAME }}
+          password: ${{ secrets.EMAIL_PASSWORD }}
+          subject: "❌ Tests failed - ${{ github.workflow }}"
+          to: "jmmokeni@gmail.com"
+          from: "GitHub Actions - Le Coursier"
+          body: |
+            ❌ Tests failed
+
+            📋 Test Information:
+            - Pipeline: ${{ github.workflow }}
+            - Branch: ${{ github.ref }}
+            - Commit: ${{ github.sha }}
+
+            🔗 View detailed logs: https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }}
+
+      - name: Exit with test status
+        if: steps.run-tests.outcome == 'failure'
+        run: exit 1

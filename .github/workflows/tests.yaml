@@ -48,7 +48,7 @@ jobs:
             echo "outcome=success" >> $GITHUB_OUTPUT
           fi
 
-            - name: Send test failure email
+      - name: Send test failure email
         if: steps.run-tests.outcome == 'failure'
         uses: dawidd6/action-send-mail@v2
         with:

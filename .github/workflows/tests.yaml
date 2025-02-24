@@ -23,8 +23,15 @@ jobs:
       - name: Install dependencies
         run: composer install --no-interaction --prefer-dist --optimize-autoloader
 
-      - name: Verify APP_KEY
-        run: echo $APP_KEY
+      - name: Create .env file
+        run: |
+          echo "APP_NAME=LeCoursier" > .env
+          echo "APP_ENV=testing" >> .env
+          echo "APP_KEY=$APP_KEY" >> .env
+          echo "APP_DEBUG=true" >> .env
+          echo "APP_URL=http://localhost" >> .env
+          echo "DB_CONNECTION=sqlite" >> .env
+          echo "DB_DATABASE=:memory:" >> .env
 
       - name: Run tests
         run: ./vendor/bin/pest --ci --coverage --min=30

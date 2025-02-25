@@ -51,7 +51,7 @@ jobs:
           username: ${{ secrets.EMAIL_USERNAME }}
           password: ${{ secrets.EMAIL_PASSWORD }}
           subject: "✅ Build succeeded - ${{ github.workflow }}"
-          to: "jmmokeni@gmail.com"
+          to: ${{ secrets.EMAIL_RECIPIENT }}
           from: "GitHub Actions - Le Coursier"
           body: |
             ✅ The build succeeded.

@@ -7,10 +7,23 @@ on:
       - staging
 
 jobs:
+  tests:
+    uses: ./.github/workflows/tests.yaml
+    secrets:
+      EMAIL_USERNAME: ${{ secrets.EMAIL_USERNAME }}
+      EMAIL_PASSWORD: ${{ secrets.EMAIL_PASSWORD }}
+      EMAIL_RECIPIENT: ${{ secrets.EMAIL_RECIPIENT }}
+
   push:
+    needs: tests
     runs-on: ubuntu-latest
 
     steps:
+      - name: Record start time
+        id: start_time
+        shell: bash
+        run: echo "start_time=$(date +%s)" >> $GITHUB_OUTPUT
+
       - name: Checkout
         uses: actions/checkout@v2
 
@@ -29,3 +42,58 @@ jobs:
 
       - name: Logout from Docker Hub
         run: docker logout
+
+      - name: Record end time
+        id: end_time
+        shell: bash
+        run: |
+          end_time=$(date +%s)
+          echo "duration=$((end_time - ${{ steps.start_time.outputs.start_time }}))" >> $GITHUB_OUTPUT
+
+      - name: Send success email
+        if: success()
+        uses: dawidd6/action-send-mail@v2
+        with:
+          server_address: smtp.gmail.com
+          server_port: 465
+          username: ${{ secrets.EMAIL_USERNAME }}
+          password: ${{ secrets.EMAIL_PASSWORD }}
+          subject: "✅ Build succeeded - ${{ github.workflow }}"
+          to: ${{ secrets.EMAIL_RECIPIENT }}
+          from: "GitHub Actions - Le Coursier"
+          body: |
+            ✅ The build succeeded.
+
+            📋 Build Information:
+            - Pipeline: ${{ github.workflow }}
+            - Branch: ${{ github.ref }}
+            - Commit: ${{ github.sha }}
+            - Duration: ${{ steps.end_time.outputs.duration }} seconds
+
+            🔗 Workflow Run: https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }}
+
+      - name: Send failure email
+        if: failure()
+        uses: dawidd6/action-send-mail@v2
+        with:
+          server_address: smtp.gmail.com
+          server_port: 465
+          username: ${{ secrets.EMAIL_USERNAME }}
+          password: ${{ secrets.EMAIL_PASSWORD }}
+          subject: "❌ Build failed - ${{ github.workflow }}"
+          to: ${{ secrets.EMAIL_RECIPIENT }}
+          from: "GitHub Actions - Le Coursier"
+          body: |
+            ❌ The build failed
+
+            📋 Build Information:
+            - Pipeline: ${{ github.workflow }}
+            - Branch: ${{ github.ref }}
+            - Commit: ${{ github.sha }}
+            - Failed Step: ${{ github.job }}
+            - Duration: ${{ steps.end_time.outputs.duration }} seconds
+            - Status: ${{ job.status }}
+
+            🔗 View detailed logs: https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }}
+
+            ⚠️ Please check the logs for more details on the failure.

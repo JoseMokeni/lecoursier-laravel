@@ -12,6 +12,7 @@ jobs:
     secrets:
       EMAIL_USERNAME: ${{ secrets.EMAIL_USERNAME }}
       EMAIL_PASSWORD: ${{ secrets.EMAIL_PASSWORD }}
+      EMAIL_RECIPIENT: ${{ secrets.EMAIL_RECIPIENT }}
 
   push:
     needs: tests
@@ -58,7 +59,7 @@ jobs:
           username: ${{ secrets.EMAIL_USERNAME }}
           password: ${{ secrets.EMAIL_PASSWORD }}
           subject: "✅ Build succeeded - ${{ github.workflow }}"
-          to: "jmmokeni@gmail.com"
+          to: ${{ secrets.EMAIL_RECIPIENT }}
           from: "GitHub Actions - Le Coursier"
           body: |
             ✅ The build succeeded.
@@ -80,7 +81,7 @@ jobs:
           username: ${{ secrets.EMAIL_USERNAME }}
           password: ${{ secrets.EMAIL_PASSWORD }}
           subject: "❌ Build failed - ${{ github.workflow }}"
-          to: "jmmokeni@gmail.com"
+          to: ${{ secrets.EMAIL_RECIPIENT }}
           from: "GitHub Actions - Le Coursier"
           body: |
             ❌ The build failed

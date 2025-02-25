@@ -7,6 +7,8 @@ on:
         required: true
       EMAIL_PASSWORD:
         required: true
+      EMAIL_RECIPIENT:
+        required: true
     outputs:
       test_outcome:
         description: "Test execution outcome"
@@ -62,7 +64,7 @@ jobs:
           username: ${{ secrets.EMAIL_USERNAME }}
           password: ${{ secrets.EMAIL_PASSWORD }}
           subject: "❌ Tests failed - ${{ github.workflow }}"
-          to: "jmmokeni@gmail.com"
+          to: ${{ secrets.EMAIL_RECIPIENT }}
           from: "GitHub Actions - Le Coursier <${{ secrets.EMAIL_USERNAME }}>"
           body: |
             ❌ Tests failed

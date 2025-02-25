@@ -7,14 +7,7 @@ on:
       - develop
 
 jobs:
-  tests:
-    uses: ./.github/workflows/tests.yaml
-    secrets:
-      EMAIL_USERNAME: ${{ secrets.EMAIL_USERNAME }}
-      EMAIL_PASSWORD: ${{ secrets.EMAIL_PASSWORD }}
-
   push:
-    needs: tests
     runs-on: ubuntu-latest
 
     steps:
@@ -58,7 +51,7 @@ jobs:
           username: ${{ secrets.EMAIL_USERNAME }}
           password: ${{ secrets.EMAIL_PASSWORD }}
           subject: "✅ Build succeeded - ${{ github.workflow }}"
-          to: "jmmokeni@gmail.com"
+          to: ${{ secrets.EMAIL_RECIPIENT }}
           from: "GitHub Actions - Le Coursier"
           body: |
             ✅ The build succeeded.

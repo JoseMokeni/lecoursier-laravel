@@ -7,5 +7,5 @@ Route::get('/', function () {
 });
 
 Route::get('/hello', function () {
-    return 'Hello from Le Coursier Saas';
+    return 'Hello from Le Coursier Saas (updated)';
 });

@@ -23,6 +23,9 @@
         <script src="https://cdn.jsdelivr.net/npm/alpinejs@2"></script>
     @endif
 
+    <link rel="stylesheet" href="{{ mix('css/app.css') }}">
+    <script src="{{ mix('js/app.js') }}" defer></script>
+
     <style>
         /* Fallback icon for mobile menu if Font Awesome fails to load */
         .mobile-menu-icon {

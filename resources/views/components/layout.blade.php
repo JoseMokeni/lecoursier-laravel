@@ -18,13 +18,9 @@
     @if (file_exists(public_path('build/manifest.json')) || file_exists(public_path('hot')))
         @vite(['resources/css/app.css', 'resources/js/app.js'])
     @else
-        {{-- Tailwind cdn --}}
-        <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2" rel="stylesheet">
-        <script src="https://cdn.jsdelivr.net/npm/alpinejs@2"></script>
+        <link rel="stylesheet" href="{{ asset('css/app.css') }}">
+        <script src="{{ asset('js/app.js') }}" defer></script>
     @endif
-
-    <link rel="stylesheet" href="{{ mix('css/app.css') }}">
-    <script src="{{ mix('js/app.js') }}" defer></script>
 
     <style>
         /* Fallback icon for mobile menu if Font Awesome fails to load */

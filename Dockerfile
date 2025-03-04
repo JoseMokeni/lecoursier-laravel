@@ -44,30 +44,38 @@ WORKDIR /var/www/html
 # Ensure working directory is owned by the 'service' user
 RUN chown -R service:service /var/www/html
 
-# Switch to the non-root 'service' user
-USER service
-
 # Temporarily switch to root to copy code
 USER root
-# COPY ./docker/php/xdebug.ini /usr/local/etc/php/conf.d/xdebug.ini
 COPY ./docker/php/xdebug.ini /usr/local/etc/php/conf.d/xdebug.ini
 COPY . /var/www/html
 RUN chown -R service:service /var/www/html
 
-# Switch back to 'service' user
+# Switch to 'service' user
 USER service
 
-# Now run npm install and build assets
+# Install npm dependencies and build assets in production mode
 RUN npm install
 RUN npm run build
 
-# Now run composer install and dump-autoload
+# Install composer dependencies
 RUN composer install --no-scripts --no-autoloader
-RUN composer dump-autoload
+RUN composer dump-autoload --optimize
+
+# Create directory for public/build if it doesn't exist and ensure proper permissions
+USER root
+RUN mkdir -p public/build
+RUN chown -R service:service public/build
+USER service
+
+# Create a public/css and public/js directory as fallback for non-Vite assets
+USER root
+RUN mkdir -p public/css public/js
+RUN chown -R service:service public/css public/js
+USER service
 
 # Expose port 80
 EXPOSE 80
 
-# Update to start PHP-FPM instead of Apache
+# Start Apache
 CMD ["apache2-foreground"]
 

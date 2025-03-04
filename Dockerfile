@@ -2,7 +2,7 @@
 
 FROM php:8.3-apache
 
-# Install dependencies
+# Install dependencies including Node.js
 RUN apt-get update && apt-get install -y \
     libzip-dev \
     zip \
@@ -12,7 +12,9 @@ RUN apt-get update && apt-get install -y \
     libpng-dev \
     libonig-dev \
     libxml2-dev \
-    libpq-dev
+    libpq-dev \
+    nodejs \
+    npm
 
 # Clear cache
 RUN apt-get clean && rm -rf /var/lib/apt/lists/*
@@ -27,7 +29,7 @@ RUN pecl install xdebug && docker-php-ext-enable xdebug
 COPY ./docker/apache/vhost.conf /etc/apache2/sites-available/000-default.conf
 
 # Enable Apache modules
-RUN a2enmod rewrite
+RUN a2enmod rewrite headers
 
 # Get latest Composer
 COPY --from=composer:latest /usr/bin/composer /usr/bin/composer
@@ -54,6 +56,10 @@ RUN chown -R service:service /var/www/html
 
 # Switch back to 'service' user
 USER service
+
+# Now run npm install and build assets
+RUN npm install
+RUN npm run build
 
 # Now run composer install and dump-autoload
 RUN composer install --no-scripts --no-autoloader

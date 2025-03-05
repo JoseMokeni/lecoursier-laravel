@@ -44,7 +44,7 @@ jobs:
       - name: Run tests
         id: run-tests
         continue-on-error: true
-        run: ./vendor/bin/pest --ci --coverage --min=30
+        run: ./vendor/bin/pest --ci --coverage --min=${{ vars.MIN_COVERAGE_THRESHOLD || 30 }}
 
       - name: Set outcome
         id: set-outcome

@@ -2,7 +2,7 @@
 
 FROM php:8.3-apache
 
-# Install dependencies including Node.js
+# Install dependencies
 RUN apt-get update && apt-get install -y \
     libzip-dev \
     zip \
@@ -12,9 +12,7 @@ RUN apt-get update && apt-get install -y \
     libpng-dev \
     libonig-dev \
     libxml2-dev \
-    libpq-dev \
-    nodejs \
-    npm
+    libpq-dev
 
 # Clear cache
 RUN apt-get clean && rm -rf /var/lib/apt/lists/*
@@ -29,7 +27,7 @@ RUN pecl install xdebug && docker-php-ext-enable xdebug
 COPY ./docker/apache/vhost.conf /etc/apache2/sites-available/000-default.conf
 
 # Enable Apache modules
-RUN a2enmod rewrite headers
+RUN a2enmod rewrite
 
 # Get latest Composer
 COPY --from=composer:latest /usr/bin/composer /usr/bin/composer
@@ -44,38 +42,25 @@ WORKDIR /var/www/html
 # Ensure working directory is owned by the 'service' user
 RUN chown -R service:service /var/www/html
 
+# Switch to the non-root 'service' user
+USER service
+
 # Temporarily switch to root to copy code
 USER root
+# COPY ./docker/php/xdebug.ini /usr/local/etc/php/conf.d/xdebug.ini
 COPY ./docker/php/xdebug.ini /usr/local/etc/php/conf.d/xdebug.ini
 COPY . /var/www/html
 RUN chown -R service:service /var/www/html
 
-# Switch to 'service' user
+# Switch back to 'service' user
 USER service
 
-# Install npm dependencies and build assets in production mode
-RUN npm install
-RUN npm run build
-
-# Install composer dependencies
+# Now run composer install and dump-autoload
 RUN composer install --no-scripts --no-autoloader
-RUN composer dump-autoload --optimize
-
-# Create directory for public/build if it doesn't exist and ensure proper permissions
-USER root
-RUN mkdir -p public/build
-RUN chown -R service:service public/build
-USER service
-
-# Create a public/css and public/js directory as fallback for non-Vite assets
-USER root
-RUN mkdir -p public/css public/js
-RUN chown -R service:service public/css public/js
-USER service
+RUN composer dump-autoload
 
 # Expose port 80
 EXPOSE 80
 
-# Start Apache
+# Update to start PHP-FPM instead of Apache
 CMD ["apache2-foreground"]
-

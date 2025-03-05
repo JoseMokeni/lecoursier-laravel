@@ -64,4 +64,3 @@ EXPOSE 80
 
 # Update to start PHP-FPM instead of Apache
 CMD ["apache2-foreground"]
-

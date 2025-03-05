@@ -1,4 +1,97 @@
 <x-layout>
+    <nav class="bg-white shadow-md fixed w-full z-10">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="flex justify-between h-16">
+                <div class="flex">
+                    <div class="flex-shrink-0 flex items-center">
+                        <a href="#"
+                            class="text-xl sm:text-2xl font-bold text-blue-600 hover:text-blue-800 truncate max-w-[150px] sm:max-w-none">Le
+                            Coursier</a>
+                    </div>
+                    <div class="hidden sm:ml-6 sm:flex sm:space-x-4 md:space-x-8">
+                        <a href="#features"
+                            class="nav-link border-transparent text-gray-500 hover:border-blue-500 hover:text-blue-700 inline-flex items-center px-1 pt-1 border-b-2 text-sm font-medium"
+                            data-section="features">
+                            Fonctionnalités
+                        </a>
+                        <a href="#for-who"
+                            class="nav-link border-transparent text-gray-500 hover:border-blue-500 hover:text-blue-700 inline-flex items-center px-1 pt-1 border-b-2 text-sm font-medium"
+                            data-section="for-who">
+                            Pour qui
+                        </a>
+                        <a href="#offers"
+                            class="nav-link border-transparent text-gray-500 hover:border-blue-500 hover:text-blue-700 inline-flex items-center px-1 pt-1 border-b-2 text-sm font-medium"
+                            data-section="offers">
+                            Nos offres
+                        </a>
+                        <a href="#demo"
+                            class="nav-link border-transparent text-gray-500 hover:border-blue-500 hover:text-blue-700 inline-flex items-center px-1 pt-1 border-b-2 text-sm font-medium"
+                            data-section="demo">
+                            Démonstration
+                        </a>
+                        <a href="#contact"
+                            class="nav-link border-transparent text-gray-500 hover:border-blue-500 hover:text-blue-700 inline-flex items-center px-1 pt-1 border-b-2 text-sm font-medium"
+                            data-section="contact">
+                            Contact
+                        </a>
+                    </div>
+                </div>
+                <div class="hidden sm:ml-6 sm:flex sm:items-center">
+                    <button class="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-md text-sm font-medium">
+                        Essai gratuit
+                    </button>
+                </div>
+                <div class="-mr-2 flex items-center sm:hidden">
+                    <button type="button"
+                        class="inline-flex items-center justify-center p-2 rounded-md text-gray-400 hover:text-gray-500 hover:bg-gray-100 focus:outline-none focus:ring-2 focus:ring-inset focus:ring-blue-500"
+                        aria-controls="mobile-menu" aria-expanded="false" id="mobile-menu-button">
+                        <span class="sr-only">Ouvrir le menu</span>
+                        <i class="fas fa-bars hamburger-icon"></i>
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Mobile menu -->
+        <div class="sm:hidden hidden" id="mobile-menu">
+            <div class="pt-2 pb-3 space-y-1">
+                <a href="#features"
+                    class="mobile-nav-link text-gray-600 hover:bg-blue-50 hover:text-blue-700 block pl-3 pr-4 py-2 border-l-4 border-transparent text-base font-medium"
+                    data-section="features">
+                    Fonctionnalités
+                </a>
+                <a href="#for-who"
+                    class="mobile-nav-link text-gray-600 hover:bg-blue-50 hover:text-blue-700 block pl-3 pr-4 py-2 border-l-4 border-transparent text-base font-medium"
+                    data-section="for-who">
+                    Pour qui
+                </a>
+                <a href="#offers"
+                    class="mobile-nav-link text-gray-600 hover:bg-blue-50 hover:text-blue-700 block pl-3 pr-4 py-2 border-l-4 border-transparent text-base font-medium"
+                    data-section="offers">
+                    Nos offres
+                </a>
+                <a href="#demo"
+                    class="mobile-nav-link text-gray-600 hover:bg-blue-50 hover:text-blue-700 block pl-3 pr-4 py-2 border-l-4 border-transparent text-base font-medium"
+                    data-section="demo">
+                    Démonstration
+                </a>
+                <a href="#contact"
+                    class="mobile-nav-link text-gray-600 hover:bg-blue-50 hover:text-blue-700 block pl-3 pr-4 py-2 border-l-4 border-transparent text-base font-medium"
+                    data-section="contact">
+                    Contact
+                </a>
+            </div>
+            <div class="pt-4 pb-3 border-t border-gray-200">
+                <div class="flex items-center px-4">
+                    <button
+                        class="w-full bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-md text-sm font-medium">
+                        Essai gratuit
+                    </button>
+                </div>
+            </div>
+        </div>
+    </nav>
+
     <!-- Hero Section -->
     <section class="relative bg-blue-600 pt-24 pb-20 overflow-hidden">
         <div class="absolute right-0 top-0 w-1/2 h-full opacity-10">
@@ -540,7 +633,7 @@
                                     </svg>
                                 </div>
                                 <div class="ml-3 text-base text-gray-700">
-                                    <p>+33 1 23 45 67 89</p>
+                                    <p>+216 00 000 000</p>
                                 </div>
                             </div>
                             <div class="flex items-start">
@@ -566,7 +659,7 @@
                                     </svg>
                                 </div>
                                 <div class="ml-3 text-base text-gray-700">
-                                    <p>123 Avenue des Champs-Élysées<br>75008 Paris, France</p>
+                                    <p>123 Avenue Habib Bourguiba<br>8000 Nabeul, Tunisie</p>
                                 </div>
                             </div>
                         </div>
@@ -662,7 +755,8 @@
                             </div>
                             <div class="ml-3">
                                 <label for="privacy" class="text-sm text-gray-500">
-                                    J'accepte la <a href="#" class="text-blue-600 hover:underline">politique de
+                                    J'accepte la <a href="{{ route('privacy.policy') }}"
+                                        class="text-blue-600 hover:underline">politique de
                                         confidentialité</a>
                                 </label>
                             </div>

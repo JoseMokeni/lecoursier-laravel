@@ -138,7 +138,7 @@
         <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
             <div class="text-center mb-16">
                 <h2 class="text-3xl font-extrabold text-gray-900 sm:text-4xl">
-                    Principales fonctionnalités
+                    Fonctionnalités Principales
                 </h2>
                 <p class="mt-4 text-xl text-gray-600 max-w-3xl mx-auto">
                     Notre plateforme offre tout ce dont vous avez besoin pour optimiser vos opérations de livraison

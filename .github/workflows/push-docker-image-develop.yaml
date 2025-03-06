@@ -19,8 +19,15 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v3
 
-      - name: Install Node Dependencies
-        run: npm ci
+      # Setup Node.js with caching
+      - name: Setup Node.js
+        uses: actions/setup-node@v3
+        with:
+          node-version: "22"
+          cache: "npm"
+
+      - name: Install Dependencies
+        run: npm install
 
       - name: Build with Vite
         run: npm run build

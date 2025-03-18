@@ -97,7 +97,7 @@
             <div class="pt-4 pb-3 border-t border-gray-200">
                 <div class="flex items-center px-4 space-y-2">
                     @if (session('tenant_id') && \App\Models\Tenant::find(session('tenant_id')))
-                        <form method="POST" action="{{ route('logout') }}" class="w-full mb-2">
+                        <form action="{{ route('reset.session') }}" class="w-full mb-2">
                             @csrf
                             <button type="submit"
                                 class="w-full border border-red-500 hover:bg-red-50 text-red-600 px-4 py-2 rounded-md text-sm font-medium text-center">

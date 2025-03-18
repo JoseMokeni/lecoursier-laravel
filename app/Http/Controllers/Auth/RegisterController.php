@@ -36,6 +36,13 @@ class RegisterController extends Controller
         // Get validated data
         $validated = $request->validated();
 
+        // Check if tenant with this ID already exists
+        if (Tenant::find($validated['code'])) {
+            return back()
+                ->withInput()
+                ->withErrors(['code' => 'Ce code de compagnie est déjà utilisé']);
+        }
+
         // Create a new tenant with company code as tenant id
         $domains = config('tenancy.central_domains');
         $tenant = Tenant::create([

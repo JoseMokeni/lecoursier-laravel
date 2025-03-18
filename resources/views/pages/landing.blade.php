@@ -36,7 +36,11 @@
                         </a>
                     </div>
                 </div>
-                <div class="hidden sm:ml-6 sm:flex sm:items-center">
+                <div class="hidden sm:ml-6 sm:flex sm:items-center space-x-3">
+                    <a href="/admin"
+                        class="border border-blue-600 hover:bg-blue-50 text-blue-600 px-4 py-2 rounded-md text-sm font-medium transition-colors">
+                        Espace Admin
+                    </a>
                     <button class="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-md text-sm font-medium">
                         Essai gratuit
                     </button>
@@ -82,7 +86,11 @@
                 </a>
             </div>
             <div class="pt-4 pb-3 border-t border-gray-200">
-                <div class="flex items-center px-4">
+                <div class="flex items-center px-4 space-y-2">
+                    <a href="/admin"
+                        class="w-full border border-blue-600 hover:bg-blue-50 text-blue-600 px-4 py-2 rounded-md text-sm font-medium mb-2 text-center">
+                        Espace Admin
+                    </a>
                     <button
                         class="w-full bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-md text-sm font-medium">
                         Essai gratuit

@@ -5,9 +5,12 @@ namespace App\Http\Controllers\Auth;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\LoginRequest;
 use App\Models\Tenant;
+use Illuminate\Container\Attributes\Log;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Http\RedirectResponse;
+use Illuminate\Support\Facades\Cookie;
+use Illuminate\Support\Facades\Log as FacadesLog;
 use Illuminate\View\View;
 use Tenancy\Facades\Tenancy;
 
@@ -31,6 +34,10 @@ class LoginController extends Controller
                 if (Auth::check()) {
                     return redirect()->intended('/dashboard');
                 }
+            } else {
+                // Tenant ID in session is invalid, clear it
+                session()->forget('tenant_id');
+                session()->save();
             }
         }
 
@@ -77,21 +84,5 @@ class LoginController extends Controller
             ->withErrors([
                 'username' => 'Les informations d\'identification fournies ne correspondent pas à nos enregistrements.',
             ]);
-    }
-
-    /**
-     * Log the user out of the application.
-     *
-     * @param Request $request
-     * @return RedirectResponse
-     */
-    public function destroy(Request $request): RedirectResponse
-    {
-        Auth::logout();
-
-        $request->session()->invalidate();
-        $request->session()->regenerateToken();
-
-        return redirect('/');
     }
 }

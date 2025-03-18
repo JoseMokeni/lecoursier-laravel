@@ -37,6 +37,15 @@
                     </div>
                 </div>
                 <div class="hidden sm:ml-6 sm:flex sm:items-center space-x-3">
+                    @if (session('tenant_id') && \App\Models\Tenant::find(session('tenant_id')))
+                        <form action="{{ route('reset.session') }}" class="inline">
+                            @csrf
+                            <button type="submit"
+                                class="text-gray-600 hover:text-red-600 px-4 py-2 rounded-md text-sm font-medium transition-colors">
+                                <i class="fas fa-sign-out-alt mr-1"></i> Déconnexion
+                            </button>
+                        </form>
+                    @endif
                     <a href="/admin"
                         class="border border-blue-600 hover:bg-blue-50 text-blue-600 px-4 py-2 rounded-md text-sm font-medium transition-colors">
                         Espace Admin
@@ -87,6 +96,15 @@
             </div>
             <div class="pt-4 pb-3 border-t border-gray-200">
                 <div class="flex items-center px-4 space-y-2">
+                    @if (session('tenant_id') && \App\Models\Tenant::find(session('tenant_id')))
+                        <form method="POST" action="{{ route('logout') }}" class="w-full mb-2">
+                            @csrf
+                            <button type="submit"
+                                class="w-full border border-red-500 hover:bg-red-50 text-red-600 px-4 py-2 rounded-md text-sm font-medium text-center">
+                                <i class="fas fa-sign-out-alt mr-1"></i> Déconnexion
+                            </button>
+                        </form>
+                    @endif
                     <a href="/admin"
                         class="w-full border border-blue-600 hover:bg-blue-50 text-blue-600 px-4 py-2 rounded-md text-sm font-medium mb-2 text-center">
                         Espace Admin

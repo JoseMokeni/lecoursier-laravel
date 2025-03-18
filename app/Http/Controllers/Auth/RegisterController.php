@@ -11,6 +11,7 @@ use Illuminate\Http\RedirectResponse;
 use Illuminate\View\View;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Config;
+use Illuminate\Support\Facades\Auth;
 use Tenancy\Facades\Tenancy;
 
 class RegisterController extends Controller
@@ -71,11 +72,19 @@ class RegisterController extends Controller
             'password' => bcrypt($validated['code'])
         ]);
 
+        // Automatically authenticate the user
+        Auth::login($user);
+
+        $request->session()->regenerate();
+
+        // Store tenant ID in session for future requests
+        $request->session()->put('tenant_id', $tenant->id);
+
         // End the tenant context if needed
         // tenancy()->end();
 
-        // Redirect to admin login page with success message
-        return redirect('/admin')
-            ->with('success', 'Company registered successfully. You can now login using your company code as both username and password.');
+        // Redirect directly to dashboard instead of login page
+        return redirect('/dashboard')
+            ->with('success', 'Company registered successfully. You are now logged in.');
     }
 }

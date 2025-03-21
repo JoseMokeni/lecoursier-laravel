@@ -57,6 +57,11 @@
                     </div>
                 @endif
 
+                <!-- Add the admin-only notice -->
+                <div class="bg-blue-50 border border-blue-200 text-blue-800 px-4 py-3 rounded relative" role="alert">
+                    <p class="text-sm">Seuls les administrateurs peuvent accéder à l'interface web.</p>
+                </div>
+
                 <form class="space-y-6" method="POST" action="/login">
                     @csrf
                     <div>

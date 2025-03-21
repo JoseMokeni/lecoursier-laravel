@@ -70,6 +70,19 @@ class LoginController extends Controller
             'username' => $validated['username'],
             'password' => $validated['password']
         ])) {
+            // Check if user is admin, if not, log them out
+            if (Auth::user()->role !== 'admin') {
+                Auth::logout();
+                $request->session()->invalidate();
+                $request->session()->regenerateToken();
+
+                return back()
+                    ->withInput($request->except('password'))
+                    ->withErrors([
+                        'role' => 'Seuls les administrateurs peuvent accéder au panneau d\'administration web.',
+                    ]);
+            }
+
             $request->session()->regenerate();
 
             // Store tenant ID in session for future requests

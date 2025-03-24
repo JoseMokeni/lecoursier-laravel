@@ -4,14 +4,15 @@ namespace App\Http\Controllers\Auth;
 
 use App\Http\Controllers\Controller;
 use App\Http\Requests\RegisterRequest;
+use App\Mail\WelcomeUserMail;
 use App\Models\Company;
 use App\Models\Tenant;
 use App\Models\User;
 use Illuminate\Http\RedirectResponse;
-use Illuminate\View\View;
-use Illuminate\Support\Facades\DB;
-use Illuminate\Support\Facades\Config;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Facades\Mail;
+use Illuminate\View\View;
 use Tenancy\Facades\Tenancy;
 
 class RegisterController extends Controller
@@ -45,22 +46,18 @@ class RegisterController extends Controller
         }
 
         // Create a new tenant with company code as tenant id
-        $domains = config('tenancy.central_domains');
         $tenant = Tenant::create([
             'id' => $validated['code']
         ]);
 
-        $tenant->domains()->createMany(array_map(function ($domain) {
-            return ['domain' => $domain];
-        }, $domains));
-
         // Switch to the tenant environment
         tenancy()->initialize($tenant);
-        // Or alternatively use the Tenancy facade
-        // Tenancy::setTenant($tenant);
 
         // Create a new company in the tenant database
         $company = Company::create($validated);
+
+        // Save the default password before encryption
+        $defaultPassword = $validated['code'];
 
         // Create a user with the company code as username
         $user = User::create([
@@ -69,8 +66,25 @@ class RegisterController extends Controller
             'username' => $validated['code'],
             'role' => 'admin',
             'status' => 'active',
-            'password' => bcrypt($validated['code'])
+            'password' => bcrypt($defaultPassword)
         ]);
+
+        // Prepare user data for the welcome email
+        $userData = [
+            'name' => $validated['name'],
+            'email' => $validated['email'],
+            'username' => $validated['code'],
+            'original_password' => $defaultPassword
+        ];
+
+        // Send welcome email with credentials
+        try {
+            Mail::to($validated['email'])
+                ->send(new WelcomeUserMail($userData, $tenant->id));
+        } catch (\Exception $e) {
+            // Log the error but don't stop the process
+            Log::error('Failed to send welcome email: ' . $e->getMessage());
+        }
 
         // Automatically authenticate the user
         Auth::login($user);
@@ -80,11 +94,8 @@ class RegisterController extends Controller
         // Store tenant ID in session for future requests
         $request->session()->put('tenant_id', $tenant->id);
 
-        // End the tenant context if needed
-        // tenancy()->end();
-
         // Redirect directly to dashboard instead of login page
         return redirect('/dashboard')
-            ->with('success', 'Company registered successfully. You are now logged in.');
+            ->with('success', 'Company registered successfully. You are now logged in. Check your email for login details.');
     }
 }

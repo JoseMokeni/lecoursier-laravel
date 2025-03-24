@@ -79,11 +79,65 @@
                 <div class="mt-8 bg-white shadow overflow-hidden sm:rounded-lg">
                     <div class="px-4 py-5 border-b border-gray-200 sm:px-6 flex justify-between items-center">
                         <h3 class="text-lg leading-6 font-medium text-gray-900">Utilisateurs</h3>
-                        <a href="/users/create"
-                            class="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md shadow-sm text-white bg-blue-600 hover:bg-blue-700">
-                            Ajouter un utilisateur
-                        </a>
+                        <div class="flex space-x-3">
+                            <!-- Search input -->
+                            <div class="relative">
+                                <input type="text" id="userSearch" placeholder="Rechercher..."
+                                    class="shadow-sm focus:ring-blue-500 focus:border-blue-500 block w-full sm:text-sm border-gray-300 rounded-md px-4 py-2"
+                                    onkeyup="filterUsers()">
+                                <div class="absolute inset-y-0 right-0 pr-3 flex items-center pointer-events-none">
+                                    <svg class="h-5 w-5 text-gray-400" xmlns="http://www.w3.org/2000/svg"
+                                        viewBox="0 0 20 20" fill="currentColor" aria-hidden="true">
+                                        <path fill-rule="evenodd"
+                                            d="M8 4a4 4 0 100 8 4 4 0 000-8zM2 8a6 6 0 1110.89 3.476l4.817 4.817a1 1 0 01-1.414 1.414l-4.816-4.816A6 6 0 012 8z"
+                                            clip-rule="evenodd" />
+                                    </svg>
+                                </div>
+                            </div>
+
+                            <a href="/users/create"
+                                class="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md shadow-sm text-white bg-blue-600 hover:bg-blue-700">
+                                Ajouter un utilisateur
+                            </a>
+                        </div>
                     </div>
+
+                    <!-- Filter controls -->
+                    <div class="px-4 py-3 bg-gray-50 border-b border-gray-200 sm:px-6">
+                        <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between">
+                            <div class="flex flex-col sm:flex-row space-y-2 sm:space-y-0 sm:space-x-4">
+                                <div>
+                                    <label for="roleFilter"
+                                        class="block text-sm font-medium text-gray-700 mb-1">Rôle</label>
+                                    <select id="roleFilter"
+                                        class="shadow-sm focus:ring-blue-500 focus:border-blue-500 block sm:text-sm border-gray-300 rounded-md px-3 py-1.5"
+                                        onchange="filterUsers()">
+                                        <option value="all">Tous</option>
+                                        <option value="admin">Administrateur</option>
+                                        <option value="user">Utilisateur</option>
+                                    </select>
+                                </div>
+                                <div>
+                                    <label for="statusFilter"
+                                        class="block text-sm font-medium text-gray-700 mb-1">Statut</label>
+                                    <select id="statusFilter"
+                                        class="shadow-sm focus:ring-blue-500 focus:border-blue-500 block sm:text-sm border-gray-300 rounded-md px-3 py-1.5"
+                                        onchange="filterUsers()">
+                                        <option value="all">Tous</option>
+                                        <option value="active">Actif</option>
+                                        <option value="inactive">Inactif</option>
+                                    </select>
+                                </div>
+                            </div>
+                            <div class="mt-2 sm:mt-0">
+                                <button type="button" onclick="resetFilters()"
+                                    class="inline-flex items-center px-3 py-1.5 border border-gray-300 shadow-sm text-sm leading-4 font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500">
+                                    Réinitialiser les filtres
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+
                     <div class="overflow-x-auto">
                         <table class="min-w-full divide-y divide-gray-200">
                             <thead class="bg-gray-50">
@@ -114,9 +168,9 @@
                                     </th>
                                 </tr>
                             </thead>
-                            <tbody class="bg-white divide-y divide-gray-200">
+                            <tbody class="bg-white divide-y divide-gray-200" id="userTableBody">
                                 @foreach ($users as $user)
-                                    <tr>
+                                    <tr class="user-row">
                                         <td class="px-6 py-4 whitespace-nowrap">
                                             <div class="text-sm font-medium text-gray-900">{{ $user->name }}</div>
                                         </td>
@@ -134,8 +188,8 @@
                                         </td>
                                         <td class="px-6 py-4 whitespace-nowrap">
                                             <span
-                                                class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full {{ $user->status ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800' }}">
-                                                {{ $user->status ? 'Actif' : 'Inactif' }}
+                                                class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full {{ $user->status == 'active' ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800' }}">
+                                                {{ $user->status == 'active' ? 'Actif' : 'Inactif' }}
                                             </span>
                                         </td>
                                         <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
@@ -169,21 +223,87 @@
                                         </td>
                                     </tr>
                                 @endforeach
-
-                                @if (count($users) == 0)
-                                    <tr>
-                                        <td colspan="8" class="px-6 py-4 text-center text-sm text-gray-500">
-                                            Aucun utilisateur trouvé
-                                        </td>
-                                    </tr>
-                                @endif
                             </tbody>
                         </table>
+                        <div id="noResults" class="px-6 py-4 text-center text-sm text-gray-500 hidden">
+                            Aucun utilisateur trouvé pour cette recherche
+                        </div>
+                        @if (count($users) == 0)
+                            <div class="px-6 py-4 text-center text-sm text-gray-500">
+                                Aucun utilisateur trouvé
+                            </div>
+                        @endif
                     </div>
                 </div>
             </div>
         </main>
     </div>
+
+    <script>
+        function filterUsers() {
+            // Get filter values
+            const query = document.getElementById('userSearch').value.toLowerCase();
+            const roleFilter = document.getElementById('roleFilter').value;
+            const statusFilter = document.getElementById('statusFilter').value;
+
+            // Get all user rows
+            const rows = document.getElementsByClassName('user-row');
+            let foundCount = 0;
+
+            // Loop through all rows and hide/show based on filters
+            for (let i = 0; i < rows.length; i++) {
+                const row = rows[i];
+                const name = row.cells[0].textContent.toLowerCase();
+                const username = row.cells[1].textContent.toLowerCase();
+                const email = row.cells[2].textContent.toLowerCase();
+                const role = row.cells[3].textContent.trim().toLowerCase();
+                const status = row.cells[4].textContent.trim().toLowerCase();
+
+                // Check if row matches search query
+                const matchesSearch = name.includes(query) ||
+                    username.includes(query) ||
+                    email.includes(query) ||
+                    role.includes(query) ||
+                    status.includes(query);
+
+                // Check if row matches role filter
+                const matchesRole = roleFilter === 'all' ||
+                    (roleFilter === 'admin' && role.includes('admin')) ||
+                    (roleFilter === 'user' && role.includes('utilisateur'));
+
+                // Check if row matches status filter
+                const matchesStatus = statusFilter === 'all' ||
+                    (statusFilter === 'active' && status.includes('actif')) ||
+                    (statusFilter === 'inactive' && status.includes('inactif'));
+
+                // Show row only if it matches all filters
+                if (matchesSearch && matchesRole && matchesStatus) {
+                    row.style.display = '';
+                    foundCount++;
+                } else {
+                    row.style.display = 'none';
+                }
+            }
+
+            // Show or hide the "No results" message
+            const noResults = document.getElementById('noResults');
+            if (foundCount === 0) {
+                noResults.classList.remove('hidden');
+            } else {
+                noResults.classList.add('hidden');
+            }
+        }
+
+        function resetFilters() {
+            // Reset all filter controls
+            document.getElementById('userSearch').value = '';
+            document.getElementById('roleFilter').value = 'all';
+            document.getElementById('statusFilter').value = 'all';
+
+            // Re-filter the table (which will show all rows)
+            filterUsers();
+        }
+    </script>
 </body>
 
 </html>

@@ -83,6 +83,19 @@ class LoginController extends Controller
                     ]);
             }
 
+            // Check if the user's status is active
+            if (Auth::user()->status !== 'active') {
+                Auth::logout();
+                $request->session()->invalidate();
+                $request->session()->regenerateToken();
+
+                return back()
+                    ->withInput($request->except('password'))
+                    ->withErrors([
+                        'status' => 'Votre compte a été désactivé. Veuillez contacter l\'administrateur pour plus d\'informations.',
+                    ]);
+            }
+
             $request->session()->regenerate();
 
             // Store tenant ID in session for future requests

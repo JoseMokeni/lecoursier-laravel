@@ -92,7 +92,8 @@ class UserController extends Controller
         $rules = [
             'name' => 'required|string|max:255',
             'email' => ['required', 'string', 'email', 'max:255', Rule::unique('users')->ignore($id)],
-            'role' => ['required', Rule::in(['admin', 'user'])]
+            'role' => ['required', Rule::in(['admin', 'user'])],
+            'status' => ['required', Rule::in(['active', 'inactive'])]
         ];
 
         // Only validate password if it's provided

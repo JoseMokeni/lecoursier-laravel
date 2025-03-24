@@ -4,7 +4,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Le Coursier - Modifier l'utilisateur</title>
+    <title>Le Coursier - Modifier un utilisateur</title>
     <script src="https://cdn.tailwindcss.com"></script>
 </head>
 
@@ -54,7 +54,7 @@
     <div class="py-10">
         <header>
             <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-                <h1 class="text-3xl font-bold leading-tight text-gray-900">Modifier l'utilisateur</h1>
+                <h1 class="text-3xl font-bold leading-tight text-gray-900">Modifier un utilisateur</h1>
             </div>
         </header>
         <main>
@@ -82,7 +82,7 @@
                             </div>
                         @endif
 
-                        <form action="/users/{{ $user->id }}" method="POST" class="space-y-6">
+                        <form method="POST" action="/users/{{ $user->id }}" class="space-y-6">
                             @csrf
                             @method('PUT')
 
@@ -95,22 +95,33 @@
                                 </div>
 
                                 <div>
-                                    <label for="username" class="block text-sm font-medium text-gray-700">Nom
-                                        d'utilisateur</label>
-                                    <div class="mt-1 flex rounded-md shadow-sm">
-                                        <input type="text" name="username" id="username"
-                                            value="{{ $user->username }}" readonly disabled
-                                            class="block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 bg-gray-100 text-gray-500 sm:text-sm">
-                                        <input type="hidden" name="username" value="{{ $user->username }}">
-                                    </div>
-                                    <p class="mt-1 text-xs text-gray-500">Le nom d'utilisateur ne peut pas être modifié
-                                    </p>
-                                </div>
-
-                                <div>
                                     <label for="email" class="block text-sm font-medium text-gray-700">Email</label>
                                     <input type="email" name="email" id="email"
                                         value="{{ old('email', $user->email) }}" required
+                                        class="mt-1 block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm">
+                                </div>
+
+                                <div>
+                                    <label for="password" class="block text-sm font-medium text-gray-700">Mot de passe
+                                        (laisser vide pour ne pas modifier)</label>
+                                    <div class="mt-1 flex rounded-md shadow-sm">
+                                        <input type="password" name="password" id="password"
+                                            class="block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm">
+                                        <button type="button" id="generate-password"
+                                            class="ml-3 inline-flex items-center px-3 py-2 border border-transparent text-sm leading-4 font-medium rounded-md text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500">
+                                            Générer
+                                        </button>
+                                    </div>
+                                    <div id="password-strength" class="mt-1 text-xs hidden">
+                                        <span id="password-feedback"></span>
+                                    </div>
+                                </div>
+
+                                <div>
+                                    <label for="password_confirmation"
+                                        class="block text-sm font-medium text-gray-700">Confirmation du mot de
+                                        passe</label>
+                                    <input type="password" name="password_confirmation" id="password_confirmation"
                                         class="mt-1 block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm">
                                 </div>
 
@@ -119,46 +130,27 @@
                                     <select name="role" id="role" required
                                         class="mt-1 block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm">
                                         <option value="admin"
-                                            {{ old('role', $user->role) == 'admin' ? 'selected' : '' }}>Administrateur
-                                        </option>
+                                            {{ old('role', $user->role) == 'admin' ? 'selected' : '' }}>
+                                            Administrateur</option>
                                         <option value="user"
-                                            {{ old('role', $user->role) == 'user' ? 'selected' : '' }}>Utilisateur
+                                            {{ old('role', $user->role) == 'user' ? 'selected' : '' }}>
+                                            Utilisateur
                                         </option>
                                     </select>
                                 </div>
 
                                 <div>
-                                    <label for="password" class="block text-sm font-medium text-gray-700">
-                                        Mot de passe <span class="text-xs text-gray-500">(laisser vide pour ne pas
-                                            changer)</span>
-                                    </label>
-                                    <input type="password" name="password" id="password"
+                                    <label for="status" class="block text-sm font-medium text-gray-700">Statut</label>
+                                    <select name="status" id="status" required
                                         class="mt-1 block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm">
-                                </div>
-
-                                <div>
-                                    <label for="password_confirmation" class="block text-sm font-medium text-gray-700">
-                                        Confirmation du mot de passe
-                                    </label>
-                                    <input type="password" name="password_confirmation" id="password_confirmation"
-                                        class="mt-1 block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm">
-                                </div>
-
-                                <div class="flex items-center mt-4">
-                                    <label for="status" class="flex items-center cursor-pointer">
-                                        <div class="relative">
-                                            <input type="checkbox" id="status" name="status" class="sr-only"
-                                                value="1" {{ old('status', $user->status) ? 'checked' : '' }}>
-                                            <div class="block bg-gray-300 w-14 h-8 rounded-full"></div>
-                                            <div
-                                                class="dot absolute left-1 top-1 bg-white w-6 h-6 rounded-full transition">
-                                            </div>
-                                        </div>
-                                        <div class="ml-3 text-gray-700">
-                                            <span class="text-sm font-medium">Statut</span>
-                                            <p class="text-xs text-gray-500">(Actif si coché)</p>
-                                        </div>
-                                    </label>
+                                        <option value="active"
+                                            {{ old('status', $user->status) == 'active' ? 'selected' : '' }}>
+                                            Actif</option>
+                                        <option value="inactive"
+                                            {{ old('status', $user->status) == 'inactive' ? 'selected' : '' }}>
+                                            Inactif
+                                        </option>
+                                    </select>
                                 </div>
                             </div>
 
@@ -186,6 +178,66 @@
             background-color: #3b82f6;
         }
     </style>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            const generateBtn = document.getElementById('generate-password');
+            const passwordField = document.getElementById('password');
+            const confirmPasswordField = document.getElementById('password_confirmation');
+            const passwordStrength = document.getElementById('password-strength');
+            const passwordFeedback = document.getElementById('password-feedback');
+
+            generateBtn.addEventListener('click', function() {
+                // Generate a random password with 12 characters including special chars, numbers, uppercase and lowercase
+                const length = 12;
+                const charset =
+                    "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789!@#$%^&*()_-+=";
+                let password = "";
+
+                // Make sure password has at least one char from each character set
+                password += getRandomChar("ABCDEFGHIJKLMNOPQRSTUVWXYZ"); // uppercase
+                password += getRandomChar("abcdefghijklmnopqrstuvwxyz"); // lowercase
+                password += getRandomChar("0123456789"); // number
+                password += getRandomChar("!@#$%^&*()_-+="); // special char
+
+                // Fill the rest randomly
+                for (let i = 4; i < length; i++) {
+                    password += charset.charAt(Math.floor(Math.random() * charset.length));
+                }
+
+                // Shuffle the password
+                password = shuffleString(password);
+
+                // Set the generated password to both fields
+                passwordField.type = "text"; // Show the password temporarily
+                passwordField.value = password;
+                confirmPasswordField.value = password;
+
+                // Show feedback
+                passwordStrength.classList.remove('hidden');
+                passwordFeedback.textContent = "Mot de passe fort généré";
+                passwordFeedback.className = "text-green-600";
+
+                // Hide the password after 3 seconds
+                setTimeout(() => {
+                    passwordField.type = "password";
+                }, 3000);
+            });
+
+            function getRandomChar(charset) {
+                return charset.charAt(Math.floor(Math.random() * charset.length));
+            }
+
+            function shuffleString(string) {
+                const array = string.split('');
+                for (let i = array.length - 1; i > 0; i--) {
+                    const j = Math.floor(Math.random() * (i + 1));
+                    [array[i], array[j]] = [array[j], array[i]];
+                }
+                return array.join('');
+            }
+        });
+    </script>
 </body>
 
 </html>

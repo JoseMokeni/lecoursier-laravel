@@ -136,13 +136,21 @@
                                 <div>
                                     <label for="role" class="block text-sm font-medium text-gray-700">Rôle</label>
                                     <select name="role" id="role" required
-                                        class="mt-1 block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm">
-                                        <option value="admin" {{ old('role') == 'admin' ? 'selected' : '' }}>
+                                        class="mt-1 block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
+                                        {{ auth()->user()->username != session('tenant_id') ? 'disabled' : '' }}>
+                                        <option value="admin" {{ old('role') == 'admin' ? 'selected' : '' }}
+                                            {{ auth()->user()->username != session('tenant_id') ? 'disabled' : '' }}>
                                             Administrateur</option>
-                                        <option value="user" {{ old('role') == 'user' ? 'selected' : '' }}>
+                                        <option value="user"
+                                            {{ old('role') == 'user' || auth()->user()->username != session('tenant_id') ? 'selected' : '' }}>
                                             Utilisateur
                                         </option>
                                     </select>
+                                    @if (auth()->user()->username != session('tenant_id'))
+                                        <p class="mt-1 text-sm text-gray-500">Seul l'administrateur principal peut créer
+                                            des administrateurs.</p>
+                                        <input type="hidden" name="role" value="user">
+                                    @endif
                                 </div>
 
                             </div>

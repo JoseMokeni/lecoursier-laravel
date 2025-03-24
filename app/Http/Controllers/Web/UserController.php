@@ -93,8 +93,21 @@ class UserController extends Controller
             'name' => 'required|string|max:255',
             'email' => ['required', 'string', 'email', 'max:255', Rule::unique('users')->ignore($id)],
             'role' => ['required', Rule::in(['admin', 'user'])],
-            'status' => ['required', Rule::in(['active', 'inactive'])]
         ];
+
+        // Status update permission handling
+        if ($user->role == 'admin') {
+            // Only main admin can update admin status
+            if ($currentUser->username === session('tenant_id')) {
+                $rules['status'] = ['required', Rule::in(['active', 'inactive'])];
+            } else {
+                // Remove status from request to prevent updates by non-main admins
+                $request->request->remove('status');
+            }
+        } else {
+            // For regular users, any admin can update status
+            $rules['status'] = ['required', Rule::in(['active', 'inactive'])];
+        }
 
         // Only validate password if it's provided
         if ($request->filled('password')) {

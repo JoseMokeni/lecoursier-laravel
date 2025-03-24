@@ -39,13 +39,27 @@ class UserController extends Controller
      */
     public function store(Request $request)
     {
-        $validated = $request->validate([
+        $currentUser = Auth::user();
+
+        // Define basic validation rules
+        $rules = [
             'name' => 'required|string|max:255',
             'email' => 'required|string|email|max:255|unique:users',
             'password' => 'required|string|min:8|confirmed',
             'username' => 'required|string|max:255|unique:users',
-            'role' => ['required', Rule::in(['admin', 'user'])]
-        ]);
+        ];
+
+        // Only the main admin can create admin users
+        if ($request->input('role') === 'admin' && $currentUser->username !== session('tenant_id')) {
+            // Force role to be 'user' if not main admin
+            $request->merge(['role' => 'user']);
+        }
+
+        $rules['role'] = ['required', Rule::in(['admin', 'user'])];
+        $validated = $request->validate($rules);
+
+        // Add default status for new users
+        $validated['status'] = 'active';
 
         $this->userService->createUser($validated);
 
@@ -92,8 +106,16 @@ class UserController extends Controller
         $rules = [
             'name' => 'required|string|max:255',
             'email' => ['required', 'string', 'email', 'max:255', Rule::unique('users')->ignore($id)],
-            'role' => ['required', Rule::in(['admin', 'user'])],
         ];
+
+        // Role update permission handling
+        if ($currentUser->username === session('tenant_id')) {
+            // Main admin can change roles
+            $rules['role'] = ['required', Rule::in(['admin', 'user'])];
+        } else {
+            // Non-main admin cannot change roles, preserve existing role
+            $request->request->remove('role');
+        }
 
         // Status update permission handling
         if ($user->role == 'admin') {
@@ -115,6 +137,16 @@ class UserController extends Controller
         }
 
         $validated = $request->validate($rules);
+
+        // Add original role back if current user isn't main admin
+        if (!$request->has('role') && $currentUser->username !== session('tenant_id')) {
+            $validated['role'] = $user->role;
+        }
+
+        // Add original status back if it was removed due to permissions
+        if (!$request->has('status') && $user->role == 'admin' && $currentUser->username !== session('tenant_id')) {
+            $validated['status'] = $user->status;
+        }
 
         $this->userService->updateUser($id, $validated);
 

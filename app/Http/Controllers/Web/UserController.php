@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\Web;
 
 use App\Http\Controllers\Controller;
+use App\Mail\PasswordChangedMail;
 use App\Mail\WelcomeUserMail;
 use App\Services\UserService;
 use Illuminate\Http\Request;
@@ -161,9 +162,15 @@ class UserController extends Controller
             $rules['status'] = ['required', Rule::in(['active', 'inactive'])];
         }
 
+        // Track if password is being updated
+        $passwordUpdated = false;
+        $newPassword = null;
+
         // Only validate password if it's provided
         if ($request->filled('password')) {
             $rules['password'] = 'required|string|min:8|confirmed';
+            $passwordUpdated = true;
+            $newPassword = $request->input('password');
         }
 
         $validated = $request->validate($rules);
@@ -189,6 +196,29 @@ class UserController extends Controller
         }
 
         $this->userService->updateUser($id, $validated);
+
+        // Send password changed email notification if password was updated
+        if ($passwordUpdated) {
+            try {
+                $userData = [
+                    'name' => $validated['name'],
+                    'email' => $validated['email'],
+                    'username' => $user->username
+                ];
+                
+                // Only include the new password in the email if the admin changed another user's password
+                $includePassword = ($currentUser->id !== $user->id);
+                $passwordToSend = $includePassword ? $newPassword : null;
+                
+                Mail::to($validated['email'])
+                    ->send(new PasswordChangedMail($userData, session('tenant_id'), $passwordToSend));
+            } catch (\Exception $e) {
+                // Log the error but don't stop the process
+                Log::error('Failed to send password changed email: ' . $e->getMessage());
+            }
+
+            return redirect('/users')->with('success', 'Utilisateur mis à jour avec succès! Un email de notification de changement de mot de passe a été envoyé.');
+        }
 
         return redirect('/users')->with('success', 'Utilisateur mis à jour avec succès!');
     }

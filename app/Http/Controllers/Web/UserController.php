@@ -205,11 +205,11 @@ class UserController extends Controller
                     'email' => $validated['email'],
                     'username' => $user->username
                 ];
-                
+
                 // Only include the new password in the email if the admin changed another user's password
                 $includePassword = ($currentUser->id !== $user->id);
                 $passwordToSend = $includePassword ? $newPassword : null;
-                
+
                 Mail::to($validated['email'])
                     ->send(new PasswordChangedMail($userData, session('tenant_id'), $passwordToSend));
             } catch (\Exception $e) {

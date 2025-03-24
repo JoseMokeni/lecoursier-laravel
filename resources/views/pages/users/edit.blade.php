@@ -129,7 +129,7 @@
                                     <label for="role" class="block text-sm font-medium text-gray-700">Rôle</label>
                                     <select name="role" id="role" required
                                         class="mt-1 block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
-                                        {{ auth()->user()->username != session('tenant_id') ? 'disabled' : '' }}>
+                                        {{ $user->username === session('tenant_id') || auth()->user()->username != session('tenant_id') ? 'disabled' : '' }}>
                                         <option value="admin"
                                             {{ old('role', $user->role) == 'admin' ? 'selected' : '' }}>
                                             Administrateur</option>
@@ -138,7 +138,11 @@
                                             Utilisateur
                                         </option>
                                     </select>
-                                    @if (auth()->user()->username != session('tenant_id'))
+                                    @if ($user->username === session('tenant_id'))
+                                        <p class="mt-1 text-sm text-gray-500">Le rôle de l'administrateur principal ne
+                                            peut pas être modifié.</p>
+                                        <input type="hidden" name="role" value="{{ $user->role }}">
+                                    @elseif (auth()->user()->username != session('tenant_id'))
                                         <p class="mt-1 text-sm text-gray-500">Seul l'administrateur principal peut
                                             modifier le rôle d'un utilisateur.</p>
                                         <input type="hidden" name="role" value="{{ $user->role }}">
@@ -149,7 +153,7 @@
                                     <label for="status" class="block text-sm font-medium text-gray-700">Statut</label>
                                     <select name="status" id="status" required
                                         class="mt-1 block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
-                                        {{ $user->role == 'admin' && auth()->user()->username != session('tenant_id') ? 'disabled' : '' }}>
+                                        {{ ($user->role == 'admin' && auth()->user()->username != session('tenant_id')) || $user->username === session('tenant_id') ? 'disabled' : '' }}>
                                         <option value="active"
                                             {{ old('status', $user->status) == 'active' ? 'selected' : '' }}>
                                             Actif</option>
@@ -158,7 +162,12 @@
                                             Inactif
                                         </option>
                                     </select>
-                                    @if ($user->role == 'admin' && auth()->user()->username != session('tenant_id'))
+                                    @if ($user->username === session('tenant_id'))
+                                        <p class="mt-1 text-sm text-gray-500">Le statut de l'administrateur principal
+                                            ne
+                                            peut pas être modifié.</p>
+                                        <input type="hidden" name="status" value="{{ $user->status }}">
+                                    @elseif ($user->role == 'admin' && auth()->user()->username != session('tenant_id'))
                                         <p class="mt-1 text-sm text-gray-500">Seul l'administrateur principal peut
                                             modifier le statut d'un administrateur.</p>
                                         <input type="hidden" name="status" value="{{ $user->status }}">

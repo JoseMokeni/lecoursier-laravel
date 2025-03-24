@@ -45,14 +45,9 @@ class RegisterController extends Controller
         }
 
         // Create a new tenant with company code as tenant id
-        $domains = config('tenancy.central_domains');
         $tenant = Tenant::create([
             'id' => $validated['code']
         ]);
-
-        $tenant->domains()->createMany(array_map(function ($domain) {
-            return ['domain' => $domain];
-        }, $domains));
 
         // Switch to the tenant environment
         tenancy()->initialize($tenant);

@@ -3,9 +3,12 @@
 namespace App\Http\Controllers\Web;
 
 use App\Http\Controllers\Controller;
+use App\Mail\WelcomeUserMail;
 use App\Services\UserService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Facades\Mail;
 use Illuminate\Validation\Rule;
 
 class UserController extends Controller
@@ -61,9 +64,30 @@ class UserController extends Controller
         // Add default status for new users
         $validated['status'] = 'active';
 
-        $this->userService->createUser($validated);
+        // Store the original password before it gets hashed
+        $originalPassword = $validated['password'];
 
-        return redirect('/users')->with('success', 'Utilisateur créé avec succès!');
+        // Create the user
+        $user = $this->userService->createUser($validated);
+
+        // Prepare user data for the welcome email
+        $userData = [
+            'name' => $validated['name'],
+            'email' => $validated['email'],
+            'username' => $validated['username'],
+            'original_password' => $originalPassword
+        ];
+
+        // Send welcome email with credentials
+        try {
+            Mail::to($validated['email'])
+                ->send(new WelcomeUserMail($userData, session('tenant_id')));
+        } catch (\Exception $e) {
+            // Log the error but don't stop the process
+            Log::error('Failed to send welcome email: ' . $e->getMessage());
+        }
+
+        return redirect('/users')->with('success', 'Utilisateur créé avec succès! Un email de bienvenue a été envoyé.');
     }
 
     /**

@@ -8,7 +8,7 @@
                             class="text-xl sm:text-2xl font-bold text-blue-600 hover:text-blue-800 truncate max-w-[150px] sm:max-w-none">Le
                             Coursier</a>
                     </div>
-                    <div class="hidden sm:ml-6 sm:flex sm:space-x-4 md:space-x-8">
+                    <div class="hidden md:ml-6 md:flex md:space-x-4 lg:space-x-8">
                         <a href="#features"
                             class="nav-link border-transparent text-gray-500 hover:border-blue-500 hover:text-blue-700 inline-flex items-center px-1 pt-1 border-b-2 text-sm font-medium"
                             data-section="features">
@@ -36,12 +36,25 @@
                         </a>
                     </div>
                 </div>
-                <div class="hidden sm:ml-6 sm:flex sm:items-center">
+                <div class="hidden md:ml-6 md:flex md:items-center space-x-3">
+                    @if (session('tenant_id') && \App\Models\Tenant::find(session('tenant_id')))
+                        <form action="{{ route('reset.session') }}" class="inline">
+                            @csrf
+                            <button type="submit"
+                                class="text-gray-600 hover:text-red-600 px-4 py-2 rounded-md text-sm font-medium transition-colors">
+                                <i class="fas fa-sign-out-alt mr-1"></i> Déconnexion
+                            </button>
+                        </form>
+                    @endif
+                    <a href="/dashboard"
+                        class="border border-blue-600 hover:bg-blue-50 text-blue-600 px-4 py-2 rounded-md text-sm font-medium transition-colors">
+                        Espace Admin
+                    </a>
                     <button class="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-md text-sm font-medium">
                         Essai gratuit
                     </button>
                 </div>
-                <div class="-mr-2 flex items-center sm:hidden">
+                <div class="-mr-2 flex items-center md:hidden">
                     <button type="button"
                         class="inline-flex items-center justify-center p-2 rounded-md text-gray-400 hover:text-gray-500 hover:bg-gray-100 focus:outline-none focus:ring-2 focus:ring-inset focus:ring-blue-500"
                         aria-controls="mobile-menu" aria-expanded="false" id="mobile-menu-button">
@@ -53,7 +66,7 @@
         </div>
 
         <!-- Mobile menu -->
-        <div class="sm:hidden hidden" id="mobile-menu">
+        <div class="md:hidden hidden" id="mobile-menu">
             <div class="pt-2 pb-3 space-y-1">
                 <a href="#features"
                     class="mobile-nav-link text-gray-600 hover:bg-blue-50 hover:text-blue-700 block pl-3 pr-4 py-2 border-l-4 border-transparent text-base font-medium"
@@ -82,9 +95,22 @@
                 </a>
             </div>
             <div class="pt-4 pb-3 border-t border-gray-200">
-                <div class="flex items-center px-4">
+                <div class="flex flex-col px-4 space-y-2">
+                    @if (session('tenant_id') && \App\Models\Tenant::find(session('tenant_id')))
+                        <form action="{{ route('reset.session') }}" class="w-full">
+                            @csrf
+                            <button type="submit"
+                                class="w-full border border-red-500 hover:bg-red-50 text-red-600 px-4 py-2 rounded-md text-sm font-medium text-center">
+                                <i class="fas fa-sign-out-alt mr-1"></i> Déconnexion
+                            </button>
+                        </form>
+                    @endif
+                    <a href="/dashboard"
+                        class="block border border-blue-600 hover:bg-blue-50 text-blue-600 px-4 py-2 rounded-md text-sm font-medium text-center">
+                        Espace Admin
+                    </a>
                     <button
-                        class="w-full bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-md text-sm font-medium">
+                        class="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-md text-sm font-medium text-center">
                         Essai gratuit
                     </button>
                 </div>

@@ -27,8 +27,6 @@ trait DatabaseRefresh
         // Get the database directory path
         $databasePath = database_path();
 
-        dump($databasePath);
-
         // Get all db files in the database directory
         $tenantDbPrefix = config('tenancy.database.prefix');
         $tenantDbs = glob($databasePath . '/' . $tenantDbPrefix . '*');

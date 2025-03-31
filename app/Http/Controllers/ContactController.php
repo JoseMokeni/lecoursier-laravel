@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Mail\ContactFormMail;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Mail;
 
 class ContactController extends Controller
@@ -22,12 +23,20 @@ class ContactController extends Controller
         // Remove privacy field as we don't need it in the email
         unset($validated['privacy']);
 
-        // Send email
-        Mail::to(config('mail.contact_address', 'contact@lecoursier.app'))
-            ->send(new ContactFormMail($validated));
+        try {
+            // Send email
+            Mail::to(config('mail.contact_address', 'contact@lecoursier.app'))
+                ->send(new ContactFormMail($validated));
 
-        return redirect()
-            ->back()
-            ->with('success', 'Votre message a été envoyé. Nous vous répondrons dans les plus brefs délais.');
+            return redirect()
+                ->back()
+                ->with('success', 'Votre message a été envoyé. Nous vous répondrons dans les plus brefs délais.');
+        } catch (\Exception $e) {
+            Log::error('Failed to send contact email: ' . $e->getMessage());
+
+            return response()->view('errors.500', [
+                'message' => 'Impossible d\'envoyer votre message. Veuillez réessayer plus tard.'
+            ], 500);
+        }
     }
 }

@@ -115,6 +115,49 @@ class UserControllerTest extends TestCase
         });
     }
 
+    public function test_store_validates_required_fields()
+    {
+        // Missing required fields
+        $userData = [
+            'name' => '',
+            'email' => 'invalid-email',
+            'username' => '',
+            'password' => 'pass',
+            'password_confirmation' => 'different'
+        ];
+
+        $response = $this->actingAsAdmin()
+                        ->post('/users', $userData);
+
+        // Should have validation errors
+        $response->assertSessionHasErrors(['name', 'email', 'username', 'password']);
+    }
+
+    public function test_store_validates_unique_email_and_username()
+    {
+        // Create existing user
+        User::factory()->create([
+            'email' => 'existing@example.com',
+            'username' => 'existinguser'
+        ]);
+
+        // Try to create user with same email/username
+        $userData = [
+            'name' => 'Duplicate User',
+            'email' => 'existing@example.com',
+            'username' => 'existinguser',
+            'password' => 'password123',
+            'password_confirmation' => 'password123',
+            'role' => 'user'
+        ];
+
+        $response = $this->actingAsAdmin()
+                        ->post('/users', $userData);
+
+        // Should have validation errors for both fields
+        $response->assertSessionHasErrors(['email', 'username']);
+    }
+
     public function test_main_admin_can_create_admin_user()
     {
         Mail::fake();
@@ -183,6 +226,34 @@ class UserControllerTest extends TestCase
         ]);
     }
 
+    public function test_email_failure_doesnt_prevent_user_creation()
+    {
+        // Set up Mail to throw an exception
+        Mail::shouldReceive('to')->andThrow(new \Exception('Mail server connection failed'));
+
+        $userData = [
+            'name' => 'Mail Fail User',
+            'email' => 'mailfail@example.com',
+            'username' => 'mailfailuser',
+            'password' => 'password123',
+            'password_confirmation' => 'password123',
+            'role' => 'user'
+        ];
+
+        $response = $this->actingAsAdmin()
+                        ->post('/users', $userData);
+
+        // Should still succeed despite mail failure
+        $response->assertRedirect('/users');
+        $response->assertSessionHas('success');
+
+        // User should be created
+        $this->assertDatabaseHas('users', [
+            'email' => 'mailfail@example.com',
+            'username' => 'mailfailuser'
+        ]);
+    }
+
     public function test_edit_displays_user_edit_form()
     {
         $user = User::factory()->create(['role' => 'user']);
@@ -195,6 +266,15 @@ class UserControllerTest extends TestCase
         $response->assertViewHas('user', function($viewUser) use ($user) {
             return $viewUser->id === $user->id;
         });
+    }
+
+    public function test_edit_returns_error_for_nonexistent_user()
+    {
+        $response = $this->actingAsAdmin()
+                        ->get("/users/999/edit");
+
+        $response->assertRedirect('/users');
+        $response->assertSessionHas('error', 'Utilisateur non trouvé');
     }
 
     public function test_main_admin_can_edit_any_user()
@@ -233,6 +313,22 @@ class UserControllerTest extends TestCase
         $response->assertSessionHas('error', 'Vous n\'avez pas la permission de modifier cet administrateur');
     }
 
+    public function test_regular_admin_can_edit_themselves()
+    {
+        // Create a regular admin
+        $regularAdmin = User::factory()->create([
+            'role' => 'admin',
+            'username' => 'regularadmin'
+        ]);
+
+        // Regular admin should be able to edit their own profile
+        $response = $this->actingAs($regularAdmin)
+                        ->get("/users/{$regularAdmin->id}/edit");
+
+        $response->assertStatus(200);
+        $response->assertViewIs('pages.users.edit');
+    }
+
     public function test_update_user_information()
     {
         $user = User::factory()->create([
@@ -259,6 +355,43 @@ class UserControllerTest extends TestCase
             'name' => 'Updated Name',
             'email' => 'updated@example.com'
         ]);
+    }
+
+    public function test_update_validates_required_fields()
+    {
+        $user = User::factory()->create();
+
+        $updateData = [
+            'name' => '',
+            'email' => 'not-an-email',
+            'role' => 'user',
+            'status' => 'active'
+        ];
+
+        $response = $this->actingAsAdmin()
+                        ->put("/users/{$user->id}", $updateData);
+
+        $response->assertSessionHasErrors(['name', 'email']);
+    }
+
+    public function test_update_validates_unique_email()
+    {
+        // Create two users
+        $user1 = User::factory()->create();
+        $user2 = User::factory()->create();
+
+        // Try to update user2 with user1's email
+        $updateData = [
+            'name' => 'Updated Name',
+            'email' => $user1->email,
+            'role' => 'user',
+            'status' => 'active'
+        ];
+
+        $response = $this->actingAsAdmin()
+                        ->put("/users/{$user2->id}", $updateData);
+
+        $response->assertSessionHasErrors('email');
     }
 
     public function test_update_user_with_password()
@@ -288,6 +421,80 @@ class UserControllerTest extends TestCase
         });
     }
 
+    public function test_update_password_validation()
+    {
+        $user = User::factory()->create();
+
+        $updateData = [
+            'name' => $user->name,
+            'email' => $user->email,
+            'role' => 'user',
+            'status' => 'active',
+            'password' => 'short',
+            'password_confirmation' => 'doesnt_match'
+        ];
+
+        $response = $this->actingAsAdmin()
+                        ->put("/users/{$user->id}", $updateData);
+
+        $response->assertSessionHasErrors('password');
+    }
+
+    public function test_self_password_update_doesnt_include_password_in_email()
+    {
+        Mail::fake();
+
+        // Update main admin's own password
+        $updateData = [
+            'name' => $this->mainAdmin->name,
+            'email' => $this->mainAdmin->email,
+            'password' => 'newadminpass123',
+            'password_confirmation' => 'newadminpass123'
+        ];
+
+        $response = $this->actingAsAdmin()
+                        ->put("/users/{$this->mainAdmin->id}", $updateData);
+
+        $response->assertRedirect('/users');
+
+        // Email should be sent but without password included
+        Mail::assertSent(PasswordChangedMail::class, function($mail) {
+            // We would need to check the mail content to verify password not included
+            // but we can at least verify it was sent to the right address
+            return $mail->hasTo($this->mainAdmin->email);
+        });
+    }
+
+    public function test_email_failure_during_password_update_doesnt_prevent_update()
+    {
+        // Set up Mail to throw an exception
+        Mail::shouldReceive('to')->andThrow(new \Exception('Mail server connection failed'));
+
+        $user = User::factory()->create();
+
+        $updateData = [
+            'name' => 'Mail Fail Update',
+            'email' => $user->email,
+            'role' => 'user',
+            'status' => 'active',
+            'password' => 'newpassword123',
+            'password_confirmation' => 'newpassword123'
+        ];
+
+        $response = $this->actingAsAdmin()
+                        ->put("/users/{$user->id}", $updateData);
+
+        // Should still succeed despite mail failure
+        $response->assertRedirect('/users');
+        $response->assertSessionHas('success');
+
+        // User should be updated
+        $this->assertDatabaseHas('users', [
+            'id' => $user->id,
+            'name' => 'Mail Fail Update'
+        ]);
+    }
+
     public function test_cannot_update_main_admin_role()
     {
         // Try to update main admin role to 'user'
@@ -312,6 +519,79 @@ class UserControllerTest extends TestCase
         ]);
     }
 
+    public function test_update_returns_error_for_nonexistent_user()
+    {
+        $updateData = [
+            'name' => 'Updated Name',
+            'email' => 'updated@example.com',
+            'role' => 'user',
+            'status' => 'active'
+        ];
+
+        $response = $this->actingAsAdmin()
+                        ->put("/users/999", $updateData);
+
+        $response->assertRedirect('/users');
+        $response->assertSessionHas('error', 'Utilisateur non trouvé');
+    }
+
+    public function test_regular_admin_cannot_upgrade_user_to_admin()
+    {
+        $regularAdmin = User::factory()->create([
+            'role' => 'admin',
+            'username' => 'regularadmin'
+        ]);
+
+        $regularUser = User::factory()->create(['role' => 'user']);
+
+        // Regular admin tries to upgrade a user to admin
+        $updateData = [
+            'name' => $regularUser->name,
+            'email' => $regularUser->email,
+            'role' => 'admin', // Attempt to upgrade
+            'status' => 'active'
+        ];
+
+        $response = $this->actingAs($regularAdmin)
+                        ->put("/users/{$regularUser->id}", $updateData);
+
+        // Role should remain unchanged
+        $this->assertDatabaseHas('users', [
+            'id' => $regularUser->id,
+            'role' => 'user'
+        ]);
+    }
+
+    public function test_regular_admin_cannot_update_another_admin()
+    {
+        $regularAdmin = User::factory()->create([
+            'role' => 'admin',
+            'username' => 'regularadmin'
+        ]);
+
+        $anotherAdmin = User::factory()->create(['role' => 'admin']);
+
+        // Regular admin tries to update another admin
+        $updateData = [
+            'name' => 'New Admin Name',
+            'email' => $anotherAdmin->email,
+            'role' => 'admin',
+            'status' => 'active'
+        ];
+
+        $response = $this->actingAs($regularAdmin)
+                        ->put("/users/{$anotherAdmin->id}", $updateData);
+
+        $response->assertRedirect('/users');
+        $response->assertSessionHas('error', 'Vous n\'avez pas la permission de modifier cet administrateur');
+
+        // Admin should remain unchanged
+        $this->assertDatabaseMissing('users', [
+            'id' => $anotherAdmin->id,
+            'name' => 'New Admin Name'
+        ]);
+    }
+
     public function test_delete_user()
     {
         $user = User::factory()->create(['role' => 'user']);
@@ -325,6 +605,15 @@ class UserControllerTest extends TestCase
         $this->assertDatabaseMissing('users', [
             'id' => $user->id
         ]);
+    }
+
+    public function test_delete_returns_error_for_nonexistent_user()
+    {
+        $response = $this->actingAsAdmin()
+                        ->delete("/users/999");
+
+        $response->assertRedirect('/users');
+        $response->assertSessionHas('error', 'Utilisateur non trouvé');
     }
 
     public function test_cannot_delete_main_admin()

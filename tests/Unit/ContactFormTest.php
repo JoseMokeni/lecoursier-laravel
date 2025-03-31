@@ -135,4 +135,142 @@ class ContactFormTest extends TestCase
         // you might want to update the ContactController first before implementing this test.
         $response->assertStatus(500); // Or whatever status code you choose to return for mail failures
     }
+
+    /**
+     * Test validation failure for too short name
+     */
+    public function test_contact_form_validates_min_name_length()
+    {
+        $this->withoutMiddleware(\Illuminate\Foundation\Http\Middleware\VerifyCsrfToken::class);
+
+        $formData = [
+            'name' => 'A', // Too short (minimum is 2 characters)
+            'email' => 'john@example.com',
+            'phone' => '1234567890',
+            'subject' => 'Test Subject',
+            'message' => 'This is a test message that meets the minimum length requirement',
+            'privacy' => 'accepted',
+        ];
+
+        $response = $this->post('/contact', $formData);
+
+        $response->assertSessionHasErrors(['name']);
+        $response->assertStatus(302);
+    }
+
+    /**
+     * Test validation failure for too long name
+     */
+    public function test_contact_form_validates_max_name_length()
+    {
+        $this->withoutMiddleware(\Illuminate\Foundation\Http\Middleware\VerifyCsrfToken::class);
+
+        $formData = [
+            'name' => str_repeat('A', 101), // Exceeds maximum length of 100
+            'email' => 'john@example.com',
+            'phone' => '1234567890',
+            'subject' => 'Test Subject',
+            'message' => 'This is a test message that meets the minimum length requirement',
+            'privacy' => 'accepted',
+        ];
+
+        $response = $this->post('/contact', $formData);
+
+        $response->assertSessionHasErrors(['name']);
+        $response->assertStatus(302);
+    }
+
+    /**
+     * Test validation failure for too long email
+     */
+    public function test_contact_form_validates_max_email_length()
+    {
+        $this->withoutMiddleware(\Illuminate\Foundation\Http\Middleware\VerifyCsrfToken::class);
+
+        $formData = [
+            'name' => 'John Doe',
+            'email' => str_repeat('a', 90) . '@example.com', // Creates an email > 100 chars
+            'phone' => '1234567890',
+            'subject' => 'Test Subject',
+            'message' => 'This is a test message that meets the minimum length requirement',
+            'privacy' => 'accepted',
+        ];
+
+        $response = $this->post('/contact', $formData);
+
+        $response->assertSessionHasErrors(['email']);
+        $response->assertStatus(302);
+    }
+
+    /**
+     * Test validation failure for too long phone number
+     */
+    public function test_contact_form_validates_max_phone_length()
+    {
+        $this->withoutMiddleware(\Illuminate\Foundation\Http\Middleware\VerifyCsrfToken::class);
+
+        $formData = [
+            'name' => 'John Doe',
+            'email' => 'john@example.com',
+            'phone' => str_repeat('1', 21), // Exceeds maximum length of 20
+            'subject' => 'Test Subject',
+            'message' => 'This is a test message that meets the minimum length requirement',
+            'privacy' => 'accepted',
+        ];
+
+        $response = $this->post('/contact', $formData);
+
+        $response->assertSessionHasErrors(['phone']);
+        $response->assertStatus(302);
+    }
+
+    /**
+     * Test submission with optional phone field omitted
+     */
+    public function test_contact_form_allows_null_phone()
+    {
+        Mail::fake();
+
+        $this->withoutMiddleware(\Illuminate\Foundation\Http\Middleware\VerifyCsrfToken::class);
+
+        $formData = [
+            'name' => 'John Doe',
+            'email' => 'john@example.com',
+            // Phone field intentionally omitted
+            'subject' => 'Test Subject',
+            'message' => 'This is a test message that meets the minimum length requirement',
+            'privacy' => 'accepted',
+        ];
+
+        $response = $this->post('/contact', $formData);
+
+        // Assert redirection with success message
+        $response->assertSessionHas('success');
+        $response->assertRedirect();
+
+        // Assert mail was sent
+        Mail::assertSent(ContactFormMail::class);
+    }
+
+    /**
+     * Test validation failure for too long message
+     */
+    public function test_contact_form_validates_max_message_length()
+    {
+        $this->withoutMiddleware(\Illuminate\Foundation\Http\Middleware\VerifyCsrfToken::class);
+
+        $formData = [
+            'name' => 'John Doe',
+            'email' => 'john@example.com',
+            'phone' => '1234567890',
+            'subject' => 'Test Subject',
+            'message' => str_repeat('A', 1001), // Exceeds maximum length of 1000
+            'privacy' => 'accepted',
+        ];
+
+        $response = $this->post('/contact', $formData);
+
+        $response->assertSessionHasErrors(['message']);
+        $response->assertStatus(302);
+    }
 }

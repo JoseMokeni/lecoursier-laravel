@@ -12,7 +12,12 @@ return Application::configure(basePath: dirname(__DIR__))
         health: '/up',
     )
     ->withMiddleware(function (Middleware $middleware) {
-        $middleware->alias(['tenant.auth' => \App\Http\Middleware\TenantAuth::class]);
+        $middleware->alias([
+            'tenant.auth' => \App\Http\Middleware\TenantAuth::class,
+            'api.tenant.context' => \App\Http\Middleware\Api\SetTenantContextMiddleware::class,
+            'api.admin.only' => \App\Http\Middleware\Api\AdminOnlyMiddleware::class,
+            'api.auth' => \App\Http\Middleware\Api\AuthMiddleware::class,
+    ]);
     })
     ->withExceptions(function (Exceptions $exceptions) {
         //

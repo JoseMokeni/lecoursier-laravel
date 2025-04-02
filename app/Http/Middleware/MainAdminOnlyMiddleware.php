@@ -6,7 +6,7 @@ use Closure;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 
-class AdminOnlyMiddleware
+class MainAdminOnlyMiddleware
 {
     /**
      * Handle an incoming request.
@@ -17,9 +17,10 @@ class AdminOnlyMiddleware
      */
     public function handle(Request $request, Closure $next)
     {
-        if (Auth::check() && Auth::user()->role !== 'admin') {
-            Auth::logout();
-            return redirect('/login')->with('error', 'Seuls les administrateurs ont accès à cette ressource.');
+        $tenantId = session('tenant_id');
+
+        if (Auth::user()->username !== $tenantId) {
+            return redirect('/dashboard')->with('error', 'Seuls l\'administrateur principal a accès à cette ressource.');
         }
 
         return $next($request);

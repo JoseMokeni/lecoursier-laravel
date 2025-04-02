@@ -6,6 +6,7 @@ use App\Http\Controllers\Auth\RegisterController;
 use App\Http\Controllers\Auth\LoginController;
 use App\Http\Controllers\Web\DashboardController;
 use App\Http\Controllers\Web\UserController;
+use App\Http\Controllers\Web\TenantController;
 use App\Http\Controllers\ErrorController;
 use Illuminate\Support\Facades\Auth;
 
@@ -107,6 +108,17 @@ foreach (config('tenancy.central_domains') as $domain) {
         Route::delete('/users/{id}', [UserController::class, 'destroy'])
             ->middleware(['web.active.tenant'])
             ->name('users.destroy');
+
+        // Tenant management routes (admin only)
+        Route::get('/tenants/settings', [TenantController::class, 'settings'])
+            ->middleware(['main.admin.only'])
+            ->name('tenant.settings');
+        Route::put('/tenants/{id}/activate', [TenantController::class, 'activate'])
+            ->middleware(['main.admin.only'])
+            ->name('tenant.activate');
+        Route::put('/tenants/{id}/deactivate', [TenantController::class, 'deactivate'])
+            ->middleware(['main.admin.only'])
+            ->name('tenant.deactivate');
     });
 }
 

@@ -19,7 +19,7 @@ class AdminOnlyMiddleware
     {
         if (Auth::check() && Auth::user()->role !== 'admin') {
             Auth::logout();
-            return redirect('/login')->with('error', 'Seuls les administrateurs peuvent accéder au panneau d\'administration web.');
+            return redirect('/login')->with('error', 'Seuls les administrateurs ont accès à cette ressource.');
         }
 
         return $next($request);

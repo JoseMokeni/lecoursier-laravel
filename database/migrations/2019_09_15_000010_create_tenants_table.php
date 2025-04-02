@@ -19,6 +19,7 @@ class CreateTenantsTable extends Migration
             $table->string('id')->primary();
 
             // your custom columns may go here
+            $table->string('status')->default('active');
 
             $table->timestamps();
             $table->json('data')->nullable();

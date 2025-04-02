@@ -17,6 +17,8 @@ return Application::configure(basePath: dirname(__DIR__))
             'api.tenant.context' => \App\Http\Middleware\Api\SetTenantContextMiddleware::class,
             'api.admin.only' => \App\Http\Middleware\Api\AdminOnlyMiddleware::class,
             'api.auth' => \App\Http\Middleware\Api\AuthMiddleware::class,
+            'web.active.tenant' => \App\Http\Middleware\ActiveTenantMiddleware::class,
+            'web.active.tenant.except.admin' => \App\Http\Middleware\ActiveTenantExceptAdminMiddleware::class,
     ]);
     })
     ->withExceptions(function (Exceptions $exceptions) {

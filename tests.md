@@ -1,4 +1,4 @@
-Collecting workspace information# Le Coursier Application Test Documentation
+# Le Coursier Application Test Documentation
 
 This document provides a comprehensive overview of the test suite for the Le Coursier Laravel application. The tests are organized by type and functionality, covering authentication, user management, contact forms, and basic page loading.
 
@@ -8,6 +8,8 @@ This document provides a comprehensive overview of the test suite for the Le Cou
 -   Feature Tests
     -   Authentication Tests
     -   User Management Tests
+    -   Middleware Tests
+    -   Controller Tests
 -   Unit Tests
     -   Contact Form Tests
 -   Browser Tests
@@ -108,6 +110,53 @@ The custom `DatabaseRefresh` trait is used to manage test databases, particularl
 | `test_cannot_delete_main_admin`                                   | Tests main admin cannot be deleted                                  | Main admin deletion is prevented                                  |
 | `test_regular_admin_cannot_delete_other_admin`                    | Tests regular admin cannot delete other admins                      | Deletion is denied with error message                             |
 | `test_regular_admin_can_delete_regular_user`                      | Tests regular admin can delete regular users                        | Regular user is successfully deleted                              |
+
+### Middleware Tests
+
+#### API ActiveTenantMiddleware Tests (`tests/Feature/Middleware/Api/ActiveTenantMiddlewareTest.php`)
+
+| Test Case                                       | Description                                                     | Assertions                                                           |
+| ----------------------------------------------- | --------------------------------------------------------------- | -------------------------------------------------------------------- |
+| `test_middleware_rejects_missing_tenant_header` | Tests that middleware rejects requests without tenant ID header | Returns 403 status with error message about missing tenant ID header |
+| `test_middleware_rejects_inactive_tenant`       | Tests that middleware rejects inactive tenants                  | Returns 403 status with message about inactive tenant                |
+| `test_middleware_allows_active_tenant`          | Tests that middleware allows requests with active tenant        | Request passes through middleware to next step in the pipeline       |
+| `test_middleware_rejects_nonexistent_tenant`    | Tests that middleware rejects non-existent tenant IDs           | Returns 403 status with error message about invalid tenant ID        |
+
+#### ActiveTenantMiddleware Tests (`tests/Feature/Middleware/ActiveTenantMiddlewareTest.php`)
+
+| Test Case                                      | Description                                              | Assertions                                                    |
+| ---------------------------------------------- | -------------------------------------------------------- | ------------------------------------------------------------- |
+| `test_middleware_redirects_missing_tenant_id`  | Tests redirection when tenant ID is missing from session | User is redirected to login page when no tenant ID in session |
+| `test_middleware_redirects_inactive_tenant`    | Tests redirection for inactive tenants                   | User is redirected when tenant is inactive                    |
+| `test_middleware_allows_active_tenant`         | Tests that middleware allows active tenants              | Request passes through middleware with active tenant          |
+| `test_middleware_redirects_nonexistent_tenant` | Tests redirection for non-existent tenant IDs            | User is redirected when tenant ID doesn't exist               |
+
+#### ActiveTenantExceptAdminMiddleware Tests (`tests/Feature/Middleware/ActiveTenantExceptAdminMiddlewareTest.php`)
+
+| Test Case                                                          | Description                                                    | Assertions                                                     |
+| ------------------------------------------------------------------ | -------------------------------------------------------------- | -------------------------------------------------------------- |
+| `test_middleware_redirects_missing_tenant_id`                      | Tests redirection when tenant ID is missing from session       | User is redirected when no tenant ID is present                |
+| `test_middleware_redirects_inactive_tenant_for_regular_user`       | Tests that regular users are redirected for inactive tenants   | Regular users are redirected when tenant is inactive           |
+| `test_middleware_allows_admin_access_with_inactive_tenant`         | Tests admin bypass for inactive tenants                        | Main admin (username=tenant_id) bypasses inactive tenant check |
+| `test_middleware_redirects_inactive_tenant_for_non_matching_admin` | Tests that non-main admins are redirected for inactive tenants | Non-main admins are redirected when tenant is inactive         |
+
+#### MainAdminOnlyMiddleware Tests (`tests/Feature/Middleware/MainAdminOnlyMiddlewareTest.php`)
+
+| Test Case                                  | Description                                       | Assertions                                                    |
+| ------------------------------------------ | ------------------------------------------------- | ------------------------------------------------------------- |
+| `test_middleware_allows_main_admin_access` | Tests that main admin can access protected routes | Main admin (username=tenant_id) can access protected routes   |
+| `test_middleware_redirects_non_main_admin` | Tests that non-main admins are redirected         | Non-main admins are redirected with appropriate error message |
+
+### Controller Tests
+
+#### Tenant Controller Tests (`tests/Feature/Web/TenantControllerTest.php`)
+
+| Test Case                                              | Description                                           | Assertions                                               |
+| ------------------------------------------------------ | ----------------------------------------------------- | -------------------------------------------------------- |
+| `test_tenant_settings_page_loads`                      | Tests tenant settings page loads correctly            | Page loads with status 200 and includes tenant data      |
+| `test_tenant_activation`                               | Tests tenant activation process                       | Tenant is successfully activated with success message    |
+| `test_tenant_deactivation`                             | Tests tenant deactivation process                     | Tenant is successfully deactivated with success message  |
+| `test_tenant_settings_not_accessible_to_regular_admin` | Tests that only main admin can access tenant settings | Regular admins are redirected with access denied message |
 
 ## Unit Tests
 

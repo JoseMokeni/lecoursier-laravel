@@ -5,6 +5,7 @@ namespace App\Http\Middleware\Api;
 use Closure;
 use Illuminate\Database\Eloquent\Casts\Json;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Log;
 use Symfony\Component\HttpFoundation\Response;
 
 class AdminOnlyMiddleware
@@ -24,7 +25,7 @@ class AdminOnlyMiddleware
         }
 
         // Check if user has admin role
-        if ($request->user('api')->role !== 'admin') {
+        if ($request->user('api')->role != 'admin') {
             return response()->json([
                 'message' => 'Access denied. Admin privileges required.',
             ], 403);

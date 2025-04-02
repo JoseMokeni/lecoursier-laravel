@@ -7,7 +7,7 @@ Route::get('/user', function (Request $request) {
     return $request->user();
 })->middleware('auth:api');
 
-Route::middleware('api.tenant.context')
+Route::middleware('api.tenant.context', 'api.active.tenant')
     ->group(function () {
         // test route
         Route::get('/test', function (Request $request) {

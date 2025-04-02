@@ -54,6 +54,25 @@ The custom `DatabaseRefresh` trait is used to manage test databases, particularl
 | `test_registration_completes_when_mail_fails` | Tests that registration succeeds even if email sending fails | Registration completes successfully despite mail failure                                         |
 | `test_validation_error_messages`              | Tests specific error message content                         | Error messages match expected language text                                                      |
 
+#### API Authentication Tests (`tests/Feature/Api/Auth/ApiLoginTest.php`)
+
+| Test Case                                       | Description                                                 | Assertions                                                  |
+| ----------------------------------------------- | ----------------------------------------------------------- | ----------------------------------------------------------- |
+| `test_successful_login`                         | Tests API login with valid credentials                      | Returns 200 status, token, and correct user data            |
+| `test_login_fails_with_incorrect_password`      | Tests API login with wrong password                         | Returns 401 status with invalid credentials error           |
+| `test_login_fails_with_nonexistent_username`    | Tests API login with username that doesn't exist            | Returns 401 status with invalid credentials error           |
+| `test_login_fails_for_inactive_user`            | Tests API login attempt by inactive user                    | Returns 403 status with user inactive error                 |
+| `test_login_validation_errors`                  | Tests validation errors for missing API login fields        | Returns 422 status with validation errors                   |
+| `test_token_revocation_on_login`                | Tests that previous tokens are revoked on new login         | Previous token is removed from database on new login        |
+| `test_tenant_context_middleware`                | Tests tenant context middleware validation                  | Returns 403 status for missing or invalid tenant ID         |
+| `test_admin_only_middleware_regular_user`       | Tests admin middleware blocks regular users                 | Returns 403 status for non-admin users                      |
+| `test_admin_only_middleware_admin_user`         | Tests admin middleware allows admin users                   | Returns 200 status for admin users                          |
+| `test_unauthenticated_access`                   | Tests access to protected routes without authentication     | Returns 401 status for unauthenticated requests             |
+| `test_auth_middleware_with_expired_token`       | Tests auth middleware rejects invalid tokens                | Returns 401 status for invalid tokens                       |
+| `test_auth_middleware_with_inactive_user_token` | Tests token rejection for users marked inactive after login | Returns 403 status for tokens from now-inactive users       |
+| `test_admin_only_middleware_super_admin_user`   | Tests admin middleware with non-standard admin role         | Returns 403 status because role is not exactly 'admin'      |
+| `test_middleware_across_different_tenants`      | Tests token validity across different tenants               | Returns 401 status when using token from a different tenant |
+
 ### User Management Tests
 
 #### User Controller Tests (`tests/Feature/Web/UserControllerTest.php`)

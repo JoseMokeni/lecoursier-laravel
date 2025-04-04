@@ -124,14 +124,10 @@
                             </ul>
 
                             <div class="mt-8">
-                                <form action="#" method="POST">
-                                    @csrf
-                                    <input type="hidden" name="plan" value="monthly">
-                                    <button type="submit"
-                                        class="w-full bg-blue-600 border border-transparent rounded-md py-3 px-4 text-base font-medium text-white hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500">
-                                        S'abonner maintenant
-                                    </button>
-                                </form>
+                                <a href="/billing/checkout"
+                                    class="block text-center w-full bg-blue-600 border border-transparent rounded-md py-3 px-4 text-base font-medium text-white hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500">
+                                    S'abonner maintenant
+                                </a>
                             </div>
                         </div>
                     </div>
@@ -192,14 +188,10 @@
                             </ul>
 
                             <div class="mt-8">
-                                <form action="#" method="POST">
-                                    @csrf
-                                    <input type="hidden" name="plan" value="yearly">
-                                    <button type="submit"
-                                        class="w-full bg-blue-600 border border-transparent rounded-md py-3 px-4 text-base font-medium text-white hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500">
-                                        S'abonner maintenant
-                                    </button>
-                                </form>
+                                <a href="/billing/checkout/yearly"
+                                    class="block text-center w-full bg-blue-600 border border-transparent rounded-md py-3 px-4 text-base font-medium text-white hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500">
+                                    S'abonner maintenant
+                                </a>
                             </div>
                         </div>
                     </div>

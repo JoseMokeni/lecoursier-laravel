@@ -138,4 +138,17 @@ return [
         'yearly' => env('STRIPE_YEARLY_PRICE_ID'),
     ],
 
+    /*
+    |--------------------------------------------------------------------------
+    | Stripe Product ID
+    |--------------------------------------------------------------------------
+    |
+    | The following option defines the Stripe Product ID that will be used
+    | when creating subscriptions. You can specify the default Product ID.
+    |
+    */
+    'products' => [
+        'default' => env('STRIPE_PRODUCT_ID', 'default'),
+    ],
+
 ];

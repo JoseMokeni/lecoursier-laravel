@@ -1,5 +1,6 @@
 <?php
 
+use App\Models\Tenant;
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\ContactController;
 use App\Http\Controllers\Auth\RegisterController;
@@ -126,6 +127,30 @@ foreach (config('tenancy.central_domains') as $domain) {
         })
             ->middleware(['main.admin.only'])
             ->name('billing.plans');
+
+        Route::get('/billing/checkout/{type?}', function (Request $request, $type = 'monthly') {
+            $tenant = Tenant::find(session()->get('tenant_id'));
+            if (!$tenant) {
+                return redirect()->route('error.tenant-required');
+            }
+
+            $priceId = config('cashier.prices.monthly');
+
+            $productId = config('cashier.products.default');
+
+            if ($type === 'yearly') {
+                $priceId = config('cashier.prices.yearly');
+            }
+
+            return $tenant
+                ->newSubscription($productId, $priceId)
+                ->checkout([
+                    'success_url' => route('tenant.settings'),
+                    'cancel_url' => route('tenant.settings'),
+                ]);
+        })
+            ->middleware(['main.admin.only'])
+            ->name('billing.checkout');
     });
 }
 

@@ -99,8 +99,29 @@
                                 </dd>
                             </div>
                             <div>
+                                <dt class="text-sm font-medium text-gray-500">Nom</dt>
+                                <dd class="mt-1 text-sm text-gray-900">{{ $tenant->name ?? 'Non défini' }}</dd>
+                            </div>
+                            <div>
+                                <dt class="text-sm font-medium text-gray-500">Email</dt>
+                                <dd class="mt-1 text-sm text-gray-900">{{ $tenant->email ?? 'Non défini' }}</dd>
+                            </div>
+                            <div>
+                                <dt class="text-sm font-medium text-gray-500">Téléphone</dt>
+                                <dd class="mt-1 text-sm text-gray-900">{{ $tenant->phone ?? 'Non défini' }}</dd>
+                            </div>
+                            <div>
+                                <dt class="text-sm font-medium text-gray-500">Adresse</dt>
+                                <dd class="mt-1 text-sm text-gray-900">{{ $tenant->address ?? 'Non définie' }}</dd>
+                            </div>
+                            <div>
                                 <dt class="text-sm font-medium text-gray-500">Date de création</dt>
                                 <dd class="mt-1 text-sm text-gray-900">{{ $tenant->created_at->format('d/m/Y H:i') }}
+                                </dd>
+                            </div>
+                            <div>
+                                <dt class="text-sm font-medium text-gray-500">Dernière mise à jour</dt>
+                                <dd class="mt-1 text-sm text-gray-900">{{ $tenant->updated_at->format('d/m/Y H:i') }}
                                 </dd>
                             </div>
                         </div>
@@ -132,6 +153,24 @@
                         </div>
                     </div>
                 </div>
+
+                {{-- Tenant subscription status --}}
+                @if (!tenancy()->tenant->subscribed())
+                    {{-- Subscribe button --}}
+                    <div class="mt-8 bg-white shadow overflow-hidden sm:rounded-lg">
+                        <div class="px-4 py-5 border-b border-gray-200 sm:px-6">
+                            <h3 class="text-lg leading-6 font-medium text-gray-900">Abonnement</h3>
+                        </div>
+                        <div class="px-4 py-5 sm:p-6">
+                            <p class="text-sm text-gray-500">Le locataire n'est pas abonné. Veuillez choisir un plan
+                                d'abonnement.</p>
+                            <a href="{{ route('billing.plans') }}"
+                                class="mt-4 inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md shadow-sm text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500">
+                                Choisir un plan
+                            </a>
+                        </div>
+                    </div>
+                @endif
             </div>
         </main>
     </div>

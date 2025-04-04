@@ -2,9 +2,10 @@
 
 namespace App\Providers;
 
+use App\Models\Tenant;
 use Illuminate\Support\ServiceProvider;
 use Illuminate\Support\Facades\URL;
-use Laravel\Passport\Passport;
+use Laravel\Cashier\Cashier;
 
 class AppServiceProvider extends ServiceProvider
 {
@@ -26,11 +27,6 @@ class AppServiceProvider extends ServiceProvider
             URL::forceScheme('https');
         }
 
-        // Passport configuration
-        Passport::hashClientSecrets();
-
-        Passport::tokensExpireIn(now()->addDays(15));
-        Passport::refreshTokensExpireIn(now()->addDays(30));
-        Passport::personalAccessTokensExpireIn(now()->addMonths(6));
+        Cashier::useCustomerModel(Tenant::class);
     }
 }

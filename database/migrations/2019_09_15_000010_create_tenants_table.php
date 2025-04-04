@@ -20,6 +20,10 @@ class CreateTenantsTable extends Migration
 
             // your custom columns may go here
             $table->string('status')->default('active');
+            $table->string('name')->nullable();
+            $table->string('email')->nullable();
+            $table->string('phone')->nullable();
+            $table->string('address')->nullable();
 
             $table->timestamps();
             $table->json('data')->nullable();

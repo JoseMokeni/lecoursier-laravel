@@ -99,8 +99,29 @@
                                 </dd>
                             </div>
                             <div>
+                                <dt class="text-sm font-medium text-gray-500">Nom</dt>
+                                <dd class="mt-1 text-sm text-gray-900">{{ $tenant->name ?? 'Non défini' }}</dd>
+                            </div>
+                            <div>
+                                <dt class="text-sm font-medium text-gray-500">Email</dt>
+                                <dd class="mt-1 text-sm text-gray-900">{{ $tenant->email ?? 'Non défini' }}</dd>
+                            </div>
+                            <div>
+                                <dt class="text-sm font-medium text-gray-500">Téléphone</dt>
+                                <dd class="mt-1 text-sm text-gray-900">{{ $tenant->phone ?? 'Non défini' }}</dd>
+                            </div>
+                            <div>
+                                <dt class="text-sm font-medium text-gray-500">Adresse</dt>
+                                <dd class="mt-1 text-sm text-gray-900">{{ $tenant->address ?? 'Non définie' }}</dd>
+                            </div>
+                            <div>
                                 <dt class="text-sm font-medium text-gray-500">Date de création</dt>
                                 <dd class="mt-1 text-sm text-gray-900">{{ $tenant->created_at->format('d/m/Y H:i') }}
+                                </dd>
+                            </div>
+                            <div>
+                                <dt class="text-sm font-medium text-gray-500">Dernière mise à jour</dt>
+                                <dd class="mt-1 text-sm text-gray-900">{{ $tenant->updated_at->format('d/m/Y H:i') }}
                                 </dd>
                             </div>
                         </div>

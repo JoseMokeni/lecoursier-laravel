@@ -119,6 +119,13 @@ foreach (config('tenancy.central_domains') as $domain) {
         Route::put('/tenants/{id}/deactivate', [TenantController::class, 'deactivate'])
             ->middleware(['main.admin.only'])
             ->name('tenant.deactivate');
+
+        // Billing routes
+        Route::get('/billing/plans', function () {
+            return view('pages.tenants.plans');
+        })
+            ->middleware(['main.admin.only'])
+            ->name('billing.plans');
     });
 }
 

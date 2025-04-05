@@ -21,7 +21,7 @@ foreach (config('tenancy.central_domains') as $domain) {
         // Session debug route - add this route temporarily
         Route::get('/debug-session', function () {
             $tenantId = session('tenant_id');
-            $tenant = $tenantId ? \App\Models\Tenant::find($tenantId) : null;
+            $tenant = $tenantId ? Tenant::find($tenantId) : null;
 
             return [
                 'session_has_tenant_id' => !is_null($tenantId),

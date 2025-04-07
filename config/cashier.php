@@ -153,4 +153,15 @@ return [
 
     'model' => \App\Models\Tenant::class,
 
+    /*
+    |--------------------------------------------------------------------------
+    | Free Trial Days
+    |--------------------------------------------------------------------------
+    |
+    | The number of days to give a free trial to new companies. This
+    | value is used when checking if a company is subscribed or not.
+    |
+    */
+    'trial_days' => env('CASHIER_TRIAL_DAYS', 14),
+
 ];

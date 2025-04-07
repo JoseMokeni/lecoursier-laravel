@@ -151,6 +151,13 @@ foreach (config('tenancy.central_domains') as $domain) {
         })
             ->middleware(['main.admin.only'])
             ->name('billing.checkout');
+
+        Route::get('/billing', function (Request $request) {
+
+            return tenancy()->tenant->redirectToBillingPortal(route('dashboard'));
+
+        })->middleware(['main.admin.only'])->name('billing');
+
     });
 }
 

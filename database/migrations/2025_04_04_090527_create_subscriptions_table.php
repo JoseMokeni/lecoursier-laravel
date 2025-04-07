@@ -23,6 +23,10 @@ return new class extends Migration {
             $table->timestamps();
 
             $table->index(['tenant_id', 'stripe_status']);
+            $table->foreign('tenant_id')
+                ->references('id')
+                ->on('tenants')
+                ->onDelete('cascade');
         });
     }
 

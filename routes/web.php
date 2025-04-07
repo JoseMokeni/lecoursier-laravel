@@ -21,7 +21,7 @@ foreach (config('tenancy.central_domains') as $domain) {
         // Session debug route - add this route temporarily
         Route::get('/debug-session', function () {
             $tenantId = session('tenant_id');
-            $tenant = $tenantId ? \App\Models\Tenant::find($tenantId) : null;
+            $tenant = $tenantId ? Tenant::find($tenantId) : null;
 
             return [
                 'session_has_tenant_id' => !is_null($tenantId),
@@ -122,6 +122,10 @@ foreach (config('tenancy.central_domains') as $domain) {
             ->name('tenant.deactivate');
 
         // Billing routes
+        Route::get('/billing', function () {
+            return view('pages.billing.index');
+        })->middleware(['main.admin.only'])->name('billing');
+
         Route::get('/billing/plans', function () {
             return view('pages.tenants.plans');
         })
@@ -145,12 +149,16 @@ foreach (config('tenancy.central_domains') as $domain) {
             return $tenant
                 ->newSubscription($productId, $priceId)
                 ->checkout([
-                    'success_url' => route('tenant.settings'),
-                    'cancel_url' => route('tenant.settings'),
+                    'success_url' => route('billing'),
+                    'cancel_url' => route('billing'),
                 ]);
         })
             ->middleware(['main.admin.only'])
             ->name('billing.checkout');
+
+        Route::get('/billing/portal', function (Request $request) {
+            return tenancy()->tenant->redirectToBillingPortal(route('billing'));
+        })->middleware(['main.admin.only'])->name('billing.portal');
     });
 }
 

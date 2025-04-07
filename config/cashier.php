@@ -151,4 +151,6 @@ return [
         'default' => env('STRIPE_PRODUCT_ID', 'default'),
     ],
 
+    'model' => \App\Models\Tenant::class,
+
 ];

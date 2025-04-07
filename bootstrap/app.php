@@ -22,6 +22,8 @@ return Application::configure(basePath: dirname(__DIR__))
             'api.active.tenant' => \App\Http\Middleware\Api\ActiveTenantMiddleware::class,
             'admin.only' => \App\Http\Middleware\AdminOnlyMiddleware::class,
             'main.admin.only' => \App\Http\Middleware\MainAdminOnlyMiddleware::class,
+            'web.tenant.subscribed' => \App\Http\Middleware\TenantSubscribedMiddleware::class,
+            'api.tenant.subscribed' => \App\Http\Middleware\Api\TenantSubscribedMiddleware::class,
         ]);
 
         $middleware->validateCsrfTokens(except: [

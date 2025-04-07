@@ -29,6 +29,10 @@
                             class="border-transparent text-gray-500 hover:border-gray-300 hover:text-gray-700 inline-flex items-center px-1 pt-1 border-b-2 text-sm font-medium">
                             Utilisateurs
                         </a>
+                        <a href="/billing"
+                            class="border-transparent text-gray-500 hover:border-gray-300 hover:text-gray-700 inline-flex items-center px-1 pt-1 border-b-2 text-sm font-medium">
+                            Abonnement
+                        </a>
                         <a href="/tenants/settings"
                             class="border-blue-500 text-gray-900 inline-flex items-center px-1 pt-1 border-b-2 text-sm font-medium">
                             Paramètres
@@ -153,51 +157,6 @@
                         </div>
                     </div>
                 </div>
-
-                {{-- Tenant subscription status --}}
-                @if (!tenancy()->tenant->subscribed(config('cashier.products.default')))
-                    {{-- Subscribe button --}}
-                    <div class="mt-8 bg-white shadow overflow-hidden sm:rounded-lg">
-                        <div class="px-4 py-5 border-b border-gray-200 sm:px-6">
-                            <h3 class="text-lg leading-6 font-medium text-gray-900">Abonnement</h3>
-                        </div>
-                        <div class="px-4 py-5 sm:p-6">
-                            <p class="text-sm text-gray-500">Le locataire n'est pas abonné. Veuillez choisir un plan
-                                d'abonnement.</p>
-                            <a href="{{ route('billing.plans') }}"
-                                class="mt-4 inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md shadow-sm text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500">
-                                Choisir un plan
-                            </a>
-                        </div>
-                    </div>
-                @else
-                    <div class="mt-8 bg-white shadow overflow-hidden sm:rounded-lg">
-                        <div class="px-4 py-5 border-b border-gray-200 sm:px-6">
-                            <h3 class="text-lg leading-6 font-medium text-gray-900">Abonnement</h3>
-                        </div>
-                        <div class="px-4 py-5 sm:p-6">
-                            <div class="flex items-center">
-                                <div class="flex-shrink-0">
-                                    <svg class="h-6 w-6 text-green-500" fill="none" stroke="currentColor"
-                                        viewBox="0 0 24 24">
-                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                            d="M5 13l4 4L19 7"></path>
-                                    </svg>
-                                </div>
-                                <div class="ml-3">
-                                    <p class="text-sm font-medium text-gray-900">Abonnement actif</p>
-                                    <p class="text-sm text-gray-500">Le locataire dispose d'un abonnement actif.</p>
-                                </div>
-                            </div>
-                            <div class="mt-4">
-                                <a href={{ route('billing') }}
-                                    class="inline-flex items-center px-4 py-2 border border-gray-300 shadow-sm text-sm font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500">
-                                    Gérer l'abonnement
-                                </a>
-                            </div>
-                        </div>
-                    </div>
-                @endif
             </div>
         </main>
     </div>

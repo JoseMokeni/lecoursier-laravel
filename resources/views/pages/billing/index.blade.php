@@ -13,26 +13,31 @@
         <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
             <div class="flex justify-between h-16">
                 <div class="flex">
-                    <div class="flex-shrink-0 flex items-center">
+                    <a href={{ route('dashboard') }} class="flex-shrink-0 flex items-center">
                         <h1 class="text-xl font-bold text-blue-600">Le Coursier</h1>
-                    </div>
+
+                    </a>
                     <div class="hidden sm:-my-px sm:ml-6 sm:flex sm:space-x-8">
-                        <a href="/dashboard"
-                            class="border-transparent text-gray-500 hover:border-gray-300 hover:text-gray-700 inline-flex items-center px-1 pt-1 border-b-2 text-sm font-medium">
-                            Tableau de bord
-                        </a>
-                        <a href="/users"
-                            class="border-transparent text-gray-500 hover:border-gray-300 hover:text-gray-700 inline-flex items-center px-1 pt-1 border-b-2 text-sm font-medium">
-                            Utilisateurs
-                        </a>
+                        @if (session('subscribed') == true)
+                            <a href="/dashboard"
+                                class="border-transparent text-gray-500 hover:border-gray-300 hover:text-gray-700 inline-flex items-center px-1 pt-1 border-b-2 text-sm font-medium">
+                                Tableau de bord
+                            </a>
+                            <a href="/users"
+                                class="border-transparent text-gray-500 hover:border-gray-300 hover:text-gray-700 inline-flex items-center px-1 pt-1 border-b-2 text-sm font-medium">
+                                Utilisateurs
+                            </a>
+                        @endif
                         <a href="/billing"
                             class="border-blue-500 text-gray-900 inline-flex items-center px-1 pt-1 border-b-2 text-sm font-medium">
                             Abonnement
                         </a>
-                        <a href="/tenants/settings"
-                            class="border-transparent text-gray-500 hover:border-gray-300 hover:text-gray-700 inline-flex items-center px-1 pt-1 border-b-2 text-sm font-medium">
-                            Paramètres
-                        </a>
+                        @if (session('subscribed') == true)
+                            <a href="/tenants/settings"
+                                class="border-transparent text-gray-500 hover:border-gray-300 hover:text-gray-700 inline-flex items-center px-1 pt-1 border-b-2 text-sm font-medium">
+                                Paramètres
+                            </a>
+                        @endif
                     </div>
                 </div>
                 <div class="hidden sm:ml-6 sm:flex sm:items-center">
@@ -66,6 +71,18 @@
             <div class="bg-red-100 border-l-4 border-red-500 text-red-700 p-4 rounded" role="alert">
                 <p class="font-bold">Erreur</p>
                 <p>{{ session('error') }}</p>
+            </div>
+        </div>
+    @endif
+
+    <!-- Trial Days Notification -->
+    @if (session()->has('remaining_days'))
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 mt-4">
+            <div class="bg-yellow-100 border-l-4 border-yellow-500 text-yellow-700 p-4 rounded" role="alert">
+                <p class="font-bold text-lg">Période d'essai</p>
+                <p>Il vous reste <span class="font-bold">{{ session('remaining_days') }} jour(s)</span> sur votre
+                    période d'essai gratuite. Pour éviter toute interruption de service, veuillez choisir un plan
+                    d'abonnement ci-dessous pour continuer à utiliser ce service après la période d'essai.</p>
             </div>
         </div>
     @endif

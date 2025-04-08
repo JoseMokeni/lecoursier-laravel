@@ -70,6 +70,18 @@
         </div>
     @endif
 
+    <!-- Trial Days Notification -->
+    @if (session()->has('remaining_days'))
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 mt-4">
+            <div class="bg-blue-100 border-l-4 border-blue-500 text-blue-700 p-4 rounded" role="alert">
+                <p class="font-bold">Période d'essai</p>
+                <p>Il vous reste {{ session('remaining_days') }} jour(s) d'essai. <a href="{{ route('billing.plans') }}"
+                        class="underline">Abonnez-vous maintenant</a> pour continuer à utiliser ce service après la
+                    période d'essai.</p>
+            </div>
+        </div>
+    @endif
+
     <div class="py-10">
         <header>
             <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">

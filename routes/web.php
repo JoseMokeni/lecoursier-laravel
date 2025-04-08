@@ -88,7 +88,9 @@ foreach (config('tenancy.central_domains') as $domain) {
     Route::group([
         'middleware' => ['web', 'tenant.auth']
     ], function () {
-        Route::get('/dashboard', [DashboardController::class, 'index'])->name('dashboard');
+        Route::get('/dashboard', [DashboardController::class, 'index'])
+            ->middleware(['web.tenant.subscribed'])
+            ->name('dashboard');
 
         // User management routes
         Route::get('/users', [UserController::class, 'index'])
@@ -150,7 +152,7 @@ foreach (config('tenancy.central_domains') as $domain) {
             return $tenant
                 ->newSubscription($productId, $priceId)
                 ->checkout([
-                    'success_url' => route('billing'),
+                    'success_url' => route('dashboard'),
                     'cancel_url' => route('billing'),
                 ]);
         })

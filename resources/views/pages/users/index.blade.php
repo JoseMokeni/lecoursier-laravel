@@ -75,6 +75,17 @@
                     </div>
                 @endif
 
+                <!-- Trial Days Notification -->
+                @if (session()->has('remaining_days'))
+                    <div class="mb-6 bg-blue-100 border-l-4 border-blue-500 text-blue-700 px-4 py-3 rounded"
+                        role="alert">
+                        <p class="font-bold">Période d'essai</p>
+                        <p>Il vous reste {{ session('remaining_days') }} jour(s) d'essai. <a
+                                href="{{ route('billing.plans') }}" class="underline">Abonnez-vous maintenant</a> pour
+                            continuer à utiliser ce service après la période d'essai.</p>
+                    </div>
+                @endif
+
                 <!-- Users list -->
                 <div class="mt-8 bg-white shadow overflow-hidden sm:rounded-lg">
                     <div class="px-4 py-5 border-b border-gray-200 sm:px-6 flex justify-between items-center">

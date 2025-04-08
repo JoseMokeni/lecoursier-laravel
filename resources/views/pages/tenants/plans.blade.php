@@ -14,7 +14,7 @@
             <div class="flex justify-between h-16">
                 <div class="flex">
                     <div class="flex-shrink-0 flex items-center">
-                        <h1 class="text-xl font-bold text-blue-600">Le Coursier</h1>
+                        <a href="{{ route('dashboard') }}" class="text-xl font-bold text-blue-600">Le Coursier</a>
                     </div>
                     <div class="hidden sm:-my-px sm:ml-6 sm:flex sm:space-x-8">
                         <a href="/dashboard"
@@ -47,6 +47,70 @@
                         </div>
                     </div>
                 </div>
+                <!-- Mobile menu button -->
+                <div class="flex items-center sm:hidden">
+                    <button type="button"
+                        class="mobile-menu-button inline-flex items-center justify-center p-2 rounded-md text-gray-400 hover:text-gray-500 hover:bg-gray-100 focus:outline-none focus:ring-2 focus:ring-inset focus:ring-blue-500"
+                        aria-controls="mobile-menu" aria-expanded="false">
+                        <span class="sr-only">Ouvrir le menu</span>
+                        <!-- Icon when menu is closed -->
+                        <svg class="block h-6 w-6" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"
+                            stroke="currentColor" aria-hidden="true">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                d="M4 6h16M4 12h16M4 18h16" />
+                        </svg>
+                        <!-- Icon when menu is open -->
+                        <svg class="hidden h-6 w-6" xmlns="http://www.w3.org/2000/svg" fill="none"
+                            viewBox="0 0 24 24" stroke="currentColor" aria-hidden="true">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                d="M6 18L18 6M6 6l12 12" />
+                        </svg>
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Mobile menu -->
+        <div class="hidden sm:hidden" id="mobile-menu">
+            <div class="pt-2 pb-3 space-y-1">
+                <a href="/dashboard"
+                    class="border-transparent text-gray-500 hover:bg-gray-50 hover:border-gray-300 hover:text-gray-700 block pl-3 pr-4 py-2 border-l-4 text-base font-medium">
+                    Tableau de bord
+                </a>
+                <a href="/users"
+                    class="border-transparent text-gray-500 hover:bg-gray-50 hover:border-gray-300 hover:text-gray-700 block pl-3 pr-4 py-2 border-l-4 text-base font-medium">
+                    Utilisateurs
+                </a>
+                <a href="/billing"
+                    class="border-blue-500 bg-blue-50 text-blue-700 block pl-3 pr-4 py-2 border-l-4 text-base font-medium">
+                    Abonnement
+                </a>
+                <a href="/tenants/settings"
+                    class="border-transparent text-gray-500 hover:bg-gray-50 hover:border-gray-300 hover:text-gray-700 block pl-3 pr-4 py-2 border-l-4 text-base font-medium">
+                    Paramètres
+                </a>
+            </div>
+            <div class="pt-4 pb-3 border-t border-gray-200">
+                <div class="flex items-center px-4">
+                    <div class="flex-shrink-0">
+                        <span class="inline-flex items-center justify-center h-8 w-8 rounded-full bg-gray-200">
+                            <span
+                                class="text-sm font-medium leading-none text-gray-500">{{ substr(auth()->user()->name, 0, 1) }}</span>
+                        </span>
+                    </div>
+                    <div class="ml-3">
+                        <div class="text-base font-medium text-gray-800">{{ auth()->user()->name }}</div>
+                    </div>
+                </div>
+                <div class="mt-3 space-y-1">
+                    <form action="/reset-session">
+                        @csrf
+                        <button type="submit"
+                            class="block px-4 py-2 text-base font-medium text-red-600 hover:text-red-800 hover:bg-gray-100 w-full text-left">
+                            Déconnexion
+                        </button>
+                    </form>
+                </div>
             </div>
         </div>
     </nav>
@@ -78,10 +142,10 @@
             </div>
         </header>
         <main>
-            <div class="max-w-7xl mx-auto sm:px-6 lg:px-8">
-                <div class="mt-8 grid grid-cols-1 gap-8 sm:grid-cols-2">
+            <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+                <div class="mt-8 grid grid-cols-1 gap-8 lg:grid-cols-2">
                     <!-- Monthly Plan -->
-                    <div class="bg-white overflow-hidden shadow rounded-lg relative">
+                    <div class="bg-white overflow-hidden shadow rounded-lg relative h-full">
                         <div class="px-4 py-5 sm:p-6 h-full flex flex-col">
                             <h3 class="text-lg font-medium leading-6 text-gray-900">Plan Mensuel</h3>
                             <div class="mt-4 flex items-baseline">
@@ -133,7 +197,7 @@
                     </div>
 
                     <!-- Yearly Plan -->
-                    <div class="bg-white overflow-hidden shadow rounded-lg border-2 border-blue-500 relative">
+                    <div class="bg-white overflow-hidden shadow rounded-lg border-2 border-blue-500 relative h-full">
                         <div class="px-4 py-5 sm:p-6 h-full flex flex-col">
                             <!-- Recommended badge properly positioned -->
                             <div class="absolute top-5 inset-x-0 flex justify-center">
@@ -206,6 +270,19 @@
             </div>
         </main>
     </div>
+
+    <script>
+        // Mobile menu toggle
+        const mobileMenuButton = document.querySelector('.mobile-menu-button');
+        const mobileMenu = document.getElementById('mobile-menu');
+
+        mobileMenuButton.addEventListener('click', function() {
+            mobileMenu.classList.toggle('hidden');
+            // Toggle icons
+            const icons = mobileMenuButton.querySelectorAll('svg');
+            icons.forEach(icon => icon.classList.toggle('hidden'));
+        });
+    </script>
 </body>
 
 </html>

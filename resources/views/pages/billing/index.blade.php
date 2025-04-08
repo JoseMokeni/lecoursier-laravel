@@ -52,6 +52,59 @@
                         </div>
                     </div>
                 </div>
+                <!-- Mobile menu button -->
+                <div class="flex items-center sm:hidden">
+                    <button type="button"
+                        class="mobile-menu-button inline-flex items-center justify-center p-2 rounded-md text-gray-400 hover:text-gray-500 hover:bg-gray-100 focus:outline-none focus:ring-2 focus:ring-inset focus:ring-blue-500"
+                        aria-controls="mobile-menu" aria-expanded="false">
+                        <span class="sr-only">Open main menu</span>
+                        <!-- Icon when menu is closed -->
+                        <svg class="block h-6 w-6" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"
+                            stroke="currentColor" aria-hidden="true">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                d="M4 6h16M4 12h16M4 18h16" />
+                        </svg>
+                        <!-- Icon when menu is open -->
+                        <svg class="hidden h-6 w-6" xmlns="http://www.w3.org/2000/svg" fill="none"
+                            viewBox="0 0 24 24" stroke="currentColor" aria-hidden="true">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                d="M6 18L18 6M6 6l12 12" />
+                        </svg>
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Mobile menu, show/hide based on menu state -->
+        <div class="hidden sm:hidden" id="mobile-menu">
+            <div class="pt-2 pb-3 space-y-1">
+                @if (session('subscribed') == true)
+                    <a href="/dashboard"
+                        class="border-transparent text-gray-600 hover:bg-gray-50 hover:border-gray-300 hover:text-gray-800 block pl-3 pr-4 py-2 border-l-4 text-base font-medium">Tableau
+                        de bord</a>
+                    <a href="/users"
+                        class="border-transparent text-gray-600 hover:bg-gray-50 hover:border-gray-300 hover:text-gray-800 block pl-3 pr-4 py-2 border-l-4 text-base font-medium">Utilisateurs</a>
+                @endif
+                <a href="/billing"
+                    class="bg-blue-50 border-blue-500 text-blue-700 block pl-3 pr-4 py-2 border-l-4 text-base font-medium">Abonnement</a>
+                @if (session('subscribed') == true)
+                    <a href="/tenants/settings"
+                        class="border-transparent text-gray-600 hover:bg-gray-50 hover:border-gray-300 hover:text-gray-800 block pl-3 pr-4 py-2 border-l-4 text-base font-medium">Paramètres</a>
+                @endif
+            </div>
+            <div class="pt-4 pb-3 border-t border-gray-200">
+                <div class="flex items-center px-4">
+                    <div class="ml-3">
+                        <div class="text-base font-medium text-gray-800">{{ auth()->user()->name }}</div>
+                    </div>
+                </div>
+                <div class="mt-3 space-y-1">
+                    <form action="/reset-session">
+                        @csrf
+                        <button type="submit"
+                            class="block w-full text-left px-4 py-2 text-base font-medium text-red-600 hover:text-red-800 hover:bg-gray-100">Déconnexion</button>
+                    </form>
+                </div>
             </div>
         </div>
     </nav>
@@ -79,7 +132,7 @@
     @if (session()->has('remaining_days'))
         <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 mt-4">
             <div class="bg-yellow-100 border-l-4 border-yellow-500 text-yellow-700 p-4 rounded" role="alert">
-                <p class="font-bold text-lg">Période d'essai</p>
+                <p class="font-bold text-base sm:text-lg">Période d'essai</p>
                 <p>Il vous reste <span class="font-bold">{{ session('remaining_days') }} jour(s)</span> sur votre
                     période d'essai gratuite. Pour éviter toute interruption de service, veuillez choisir un plan
                     d'abonnement ci-dessous pour continuer à utiliser ce service après la période d'essai.</p>
@@ -87,16 +140,16 @@
         </div>
     @endif
 
-    <div class="py-10">
+    <div class="py-6 sm:py-10">
         <header>
             <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-                <h1 class="text-3xl font-bold leading-tight text-gray-900">Abonnement</h1>
+                <h1 class="text-2xl sm:text-3xl font-bold leading-tight text-gray-900">Abonnement</h1>
             </div>
         </header>
         <main>
-            <div class="max-w-7xl mx-auto sm:px-6 lg:px-8">
+            <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
                 @if (!tenancy()->tenant->subscribed(config('cashier.products.default')))
-                    <div class="mt-8 bg-white shadow overflow-hidden sm:rounded-lg">
+                    <div class="mt-6 sm:mt-8 bg-white shadow overflow-hidden rounded-lg sm:rounded-lg">
                         <div class="px-4 py-5 border-b border-gray-200 sm:px-6">
                             <h3 class="text-lg leading-6 font-medium text-gray-900">Abonnement</h3>
                         </div>
@@ -110,7 +163,7 @@
                         </div>
                     </div>
                 @else
-                    <div class="mt-8 bg-white shadow overflow-hidden sm:rounded-lg">
+                    <div class="mt-6 sm:mt-8 bg-white shadow overflow-hidden rounded-lg sm:rounded-lg">
                         <div class="px-4 py-5 border-b border-gray-200 sm:px-6">
                             <h3 class="text-lg leading-6 font-medium text-gray-900">Abonnement</h3>
                         </div>
@@ -140,6 +193,24 @@
             </div>
         </main>
     </div>
+
+    <!-- JavaScript for mobile menu toggle -->
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            const mobileMenuButton = document.querySelector('.mobile-menu-button');
+            const mobileMenu = document.getElementById('mobile-menu');
+            const openIcon = mobileMenuButton.querySelector('svg.block');
+            const closeIcon = mobileMenuButton.querySelector('svg.hidden');
+
+            mobileMenuButton.addEventListener('click', function() {
+                mobileMenu.classList.toggle('hidden');
+                openIcon.classList.toggle('hidden');
+                openIcon.classList.toggle('block');
+                closeIcon.classList.toggle('hidden');
+                closeIcon.classList.toggle('block');
+            });
+        });
+    </script>
 </body>
 
 </html>

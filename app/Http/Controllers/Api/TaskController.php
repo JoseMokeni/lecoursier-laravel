@@ -1,9 +1,11 @@
 <?php
 
-namespace App\Http\Controllers;
+namespace App\Http\Controllers\Api;
 
+use App\Http\Controllers\Controller;
 use App\Http\Requests\StoreTaskRequest;
 use App\Http\Requests\UpdateTaskRequest;
+use App\Http\Resources\TaskResource;
 use App\Models\Task;
 
 class TaskController extends Controller
@@ -13,15 +15,9 @@ class TaskController extends Controller
      */
     public function index()
     {
-        //
-    }
+        $tasks = Task::all();
 
-    /**
-     * Show the form for creating a new resource.
-     */
-    public function create()
-    {
-        //
+        return TaskResource::collection($tasks);
     }
 
     /**
@@ -29,7 +25,12 @@ class TaskController extends Controller
      */
     public function store(StoreTaskRequest $request)
     {
-        //
+        // Validate the request
+        $validatedData = $request->validated();
+        // Create a new task
+        $task = Task::create($validatedData);
+        // Return the created task with camelCase attributes
+        return new TaskResource($task);
     }
 
     /**
@@ -37,15 +38,7 @@ class TaskController extends Controller
      */
     public function show(Task $task)
     {
-        //
-    }
-
-    /**
-     * Show the form for editing the specified resource.
-     */
-    public function edit(Task $task)
-    {
-        //
+        return new TaskResource($task);
     }
 
     /**

@@ -7,8 +7,6 @@ use App\Http\Requests\StoreMilestoneRequest;
 use App\Http\Requests\UpdateMilestoneRequest;
 use App\Models\Milestone;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Gate;
-use Illuminate\Support\Facades\Log;
 use Symfony\Component\HttpKernel\Exception\AccessDeniedHttpException;
 
 class MilestoneController extends Controller
@@ -20,7 +18,12 @@ class MilestoneController extends Controller
     {
         $authorized = $request->user('api')->can('viewAny', Milestone::class);
         if ($authorized) {
-            $milestones = Milestone::all();
+            // Check if favorite parameter exists in the request
+            if ($request->has('favorite')) {
+                $milestones = Milestone::where('favorite', true)->get();
+            } else {
+                $milestones = Milestone::all();
+            }
             return response()->json($milestones);
         }
         return response()->json(['message' => 'Unauthorized'], 403);
@@ -42,8 +45,6 @@ class MilestoneController extends Controller
     {
         // Manually find the milestone using the ID from the route ($milestone).
         $milestoneInstance = Milestone::findOrFail($milestone);
-
-        // Authorization is already handled by UpdateMilestoneRequest's authorize method.
 
         $milestoneInstance->update($request->validated());
         return response()->json($milestoneInstance);

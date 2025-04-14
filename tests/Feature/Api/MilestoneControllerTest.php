@@ -281,4 +281,42 @@ class MilestoneControllerTest extends TestCase
 
         $response->assertStatus(401);
     }
+
+    #[Test]
+    /** Test that admin users can retrieve favorite milestones */
+    public function admin_can_get_favorite_milestones()
+    {
+        $response = $this->withHeaders([
+            'Authorization' => 'Bearer ' . $this->adminUserToken,
+            'x-tenant-id' => 'milestone-test',
+        ])->getJson('/api/milestones?favorite=true');
+
+        $response->assertStatus(200)
+            ->assertJsonStructure([
+                '*' => [
+                'id',
+                'name',
+                'longitudinal',
+                'latitudinal',
+                'favorite',
+                'created_at',
+                'updated_at',
+                ],
+            ]);
+
+        $this->assertCount(0, $response->json());
+    }
+
+    #[Test]
+    /** Test that regular users cannot retrieve favorite milestones */
+    public function regular_users_cannot_get_favorite_milestones()
+    {
+        $response = $this->withHeaders([
+            'Authorization' => 'Bearer ' . $this->regularUserToken,
+            'x-tenant-id' => 'milestone-test',
+        ])->getJson('/api/milestones?favorite=true');
+
+        $response->assertStatus(403);
+    }
+
 }

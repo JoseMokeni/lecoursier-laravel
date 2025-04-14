@@ -30,9 +30,20 @@ class UpdateTaskRequest extends FormRequest
      */
     protected function prepareForValidation(): void
     {
-        $this->merge([
-            'completed_at' => $this->completedAt ?? $this->completed_at,
-        ]);
+        $data = [];
+
+        if ($this->has('completedAt')) {
+            $data['completed_at'] = $this->completedAt;
+        }
+
+        // Convert camelCase fields to snake_case for database storage
+        if ($this->has('dueDate')) {
+            $data['due_date'] = $this->dueDate;
+        }
+
+        if (!empty($data)) {
+            $this->merge($data);
+        }
     }
 
     /**
@@ -46,9 +57,8 @@ class UpdateTaskRequest extends FormRequest
             'description' => 'sometimes|required|string',
             'priority' => 'sometimes|required|in:low,medium,high',
             'status' => 'sometimes|required|in:pending,in_progress,completed',
-            // Support for camelCase inputs
             'completed_at' => 'sometimes|required|date',
-
+            'due_date' => 'sometimes|date',
         ];
     }
 }

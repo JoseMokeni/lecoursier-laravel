@@ -29,10 +29,14 @@ class TaskController extends Controller
     {
         // Validate the request
         $validatedData = $request->validated();
+
         // Create a new task
         $task = Task::create($validatedData);
+
         // Return the created task with camelCase attributes
-        return new TaskResource($task);
+        return (new TaskResource($task))
+            ->response()
+            ->setStatusCode(201);
     }
 
     /**
@@ -50,9 +54,11 @@ class TaskController extends Controller
     {
         $taskInstance = Task::findOrFail($task);
 
+        // Update the task with the validated data
         $taskInstance->update($request->validated());
+
         // Return the updated task with camelCase attributes
-        return new TaskResource($taskInstance);
+        return new TaskResource($taskInstance->fresh());
     }
 
     /**

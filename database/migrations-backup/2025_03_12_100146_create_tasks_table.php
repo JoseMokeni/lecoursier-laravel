@@ -22,7 +22,6 @@ return new class extends Migration
             $table->timestamp('due_date')->nullable();
             $table->timestamp('answered_at')->nullable();
             $table->foreignId('user_id')->constrained();
-            $table->foreignId('milestone_id')->constrained();
             $table->timestamps();
         });
     }

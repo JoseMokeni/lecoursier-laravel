@@ -31,12 +31,4 @@ class Milestone extends Model
     protected $casts = [
         'favorite' => 'boolean',
     ];
-
-    /**
-     * The tasks that belong to the milestone.
-     */
-    public function tasks(): BelongsToMany
-    {
-        return $this->belongsToMany(Task::class, 'task_milestones');
-    }
 }

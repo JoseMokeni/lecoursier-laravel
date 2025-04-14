@@ -31,5 +31,11 @@ return Application::configure(basePath: dirname(__DIR__))
         ]);
     })
     ->withExceptions(function (Exceptions $exceptions) {
-        //
+        // AccessDeniedHttpException handler
+        $exceptions->renderable(function (\Symfony\Component\HttpKernel\Exception\AccessDeniedHttpException $exception) {
+            return response()->json([
+                'message' => 'This action is unauthorized.',
+                'error' => 'unauthorized',
+            ], 403);
+        });
     })->create();

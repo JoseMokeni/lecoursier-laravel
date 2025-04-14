@@ -283,6 +283,45 @@ class MilestoneControllerTest extends TestCase
     }
 
     #[Test]
+    /** Test that admin users can retrieve a single milestone */
+    public function admin_can_get_single_milestone()
+    {
+        $response = $this->withHeaders([
+            'Authorization' => 'Bearer ' . $this->adminUserToken,
+            'x-tenant-id' => 'milestone-test',
+        ])->getJson('/api/milestones/' . $this->milestone->id);
+
+        $response->assertStatus(200)
+            ->assertJsonStructure([
+                'id',
+                'name',
+                'longitudinal',
+                'latitudinal',
+                'favorite',
+                'created_at',
+                'updated_at',
+            ]);
+
+        // Assert that the milestone data is correct
+        $this->assertEquals($this->milestone->id, $response->json('id'));
+        $this->assertEquals($this->milestone->name, $response->json('name'));
+        $this->assertEquals($this->milestone->longitudinal, $response->json('longitudinal'));
+        $this->assertEquals($this->milestone->latitudinal, $response->json('latitudinal'));
+    }
+
+    #[Test]
+    /** Test that regular users cannot retrieve a single milestone */
+    public function regular_users_cannot_get_single_milestone()
+    {
+        $response = $this->withHeaders([
+            'Authorization' => 'Bearer ' . $this->regularUserToken,
+            'x-tenant-id' => 'milestone-test',
+        ])->getJson('/api/milestones/' . $this->milestone->id);
+
+        $response->assertStatus(403);
+    }
+
+    #[Test]
     /** Test that admin users can retrieve favorite milestones */
     public function admin_can_get_favorite_milestones()
     {

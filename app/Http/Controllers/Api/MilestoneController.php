@@ -30,6 +30,23 @@ class MilestoneController extends Controller
     }
 
     /**
+     * Display the specified resource.
+     */
+    public function show($milestone)
+    {
+        // Manually find the milestone using the ID from the route ($milestone).
+        $milestoneInstance = Milestone::findOrFail($milestone);
+
+        // Check if the user is authorized to view the milestone.
+        if (request()->user('api')->can('view', $milestoneInstance)) {
+            return response()->json($milestoneInstance);
+        } else {
+            throw new AccessDeniedHttpException();
+        }
+    }
+
+
+    /**
      * Store a newly created resource in storage.
      */
     public function store(StoreMilestoneRequest $request)

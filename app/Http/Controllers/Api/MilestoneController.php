@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Api;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\StoreMilestoneRequest;
 use App\Http\Requests\UpdateMilestoneRequest;
+use App\Http\Resources\MilestoneResource;
 use App\Models\Milestone;
 use Illuminate\Http\Request;
 use Symfony\Component\HttpKernel\Exception\AccessDeniedHttpException;
@@ -24,7 +25,7 @@ class MilestoneController extends Controller
             } else {
                 $milestones = Milestone::all();
             }
-            return response()->json($milestones);
+            return MilestoneResource::collection($milestones);
         }
         return response()->json(['message' => 'Unauthorized'], 403);
     }
@@ -39,7 +40,7 @@ class MilestoneController extends Controller
 
         // Check if the user is authorized to view the milestone.
         if (request()->user('api')->can('view', $milestoneInstance)) {
-            return response()->json($milestoneInstance);
+            return new MilestoneResource($milestoneInstance);
         } else {
             throw new AccessDeniedHttpException();
         }
@@ -52,7 +53,8 @@ class MilestoneController extends Controller
     public function store(StoreMilestoneRequest $request)
     {
         $milestone = Milestone::create($request->validated());
-        return response()->json($milestone, 201);
+
+        return new MilestoneResource($milestone);
     }
 
     /**
@@ -64,7 +66,7 @@ class MilestoneController extends Controller
         $milestoneInstance = Milestone::findOrFail($milestone);
 
         $milestoneInstance->update($request->validated());
-        return response()->json($milestoneInstance);
+        return new MilestoneResource($milestoneInstance);
     }
 
     /**

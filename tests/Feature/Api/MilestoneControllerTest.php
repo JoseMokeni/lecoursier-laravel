@@ -88,24 +88,26 @@ class MilestoneControllerTest extends TestCase
 
         $response->assertStatus(200)
             ->assertJsonStructure([
-                '*' => [
-                'id',
-                'name',
-                'longitudinal',
-                'latitudinal',
-                'favorite',
-                'created_at',
-                'updated_at',
+                'data' => [
+                    '*' => [
+                        'id',
+                        'name',
+                        'longitudinal',
+                        'latitudinal',
+                        'favorite',
+                        'createdAt',
+                        'updatedAt',
+                    ],
                 ],
             ]);
 
-        $this->assertCount(1, $response->json());
+        $this->assertCount(1, $response->json('data'));
 
         // assert that the milestone is in the response
-        $this->assertEquals($this->milestone->id, $response->json()[0]['id']);
-        $this->assertEquals($this->milestone->name, $response->json()[0]['name']);
-        $this->assertEquals($this->milestone->longitudinal, $response->json()[0]['longitudinal']);
-        $this->assertEquals($this->milestone->latitudinal, $response->json()[0]['latitudinal']);
+        $this->assertEquals($this->milestone->id, $response->json('data.0.id'));
+        $this->assertEquals($this->milestone->name, $response->json('data.0.name'));
+        $this->assertEquals($this->milestone->longitudinal, $response->json('data.0.longitudinal'));
+        $this->assertEquals($this->milestone->latitudinal, $response->json('data.0.latitudinal'));
     }
 
     #[Test]
@@ -139,10 +141,12 @@ class MilestoneControllerTest extends TestCase
             'longitudinal' => '3.456789',
             'latitudinal' => '4.567890',
         ]);
-        $this->assertEquals('New Milestone', $response->json('name'));
-        $this->assertEquals('3.456789', $response->json('longitudinal'));
-        $this->assertEquals('4.567890', $response->json('latitudinal'));
-        $this->assertEquals(false, $response->json('favorite'));
+
+        $response->assertStatus(201);
+        $this->assertEquals('New Milestone', $response->json('data.name'));
+        $this->assertEquals('3.456789', $response->json('data.longitudinal'));
+        $this->assertEquals('4.567890', $response->json('data.latitudinal'));
+        $this->assertEquals(false, $response->json('data.favorite'));
     }
 
     #[Test]
@@ -181,9 +185,11 @@ class MilestoneControllerTest extends TestCase
             'longitudinal' => '5.678901',
             'latitudinal' => '6.789012',
         ]);
-        $this->assertEquals('Updated Milestone', $response->json('name'));
-        $this->assertEquals('5.678901', $response->json('longitudinal'));
-        $this->assertEquals('6.789012', $response->json('latitudinal'));
+
+        $response->assertStatus(200);
+        $this->assertEquals('Updated Milestone', $response->json('data.name'));
+        $this->assertEquals('5.678901', $response->json('data.longitudinal'));
+        $this->assertEquals('6.789012', $response->json('data.latitudinal'));
     }
 
     #[Test]
@@ -293,20 +299,22 @@ class MilestoneControllerTest extends TestCase
 
         $response->assertStatus(200)
             ->assertJsonStructure([
-                'id',
-                'name',
-                'longitudinal',
-                'latitudinal',
-                'favorite',
-                'created_at',
-                'updated_at',
+                'data' => [
+                    'id',
+                    'name',
+                    'longitudinal',
+                    'latitudinal',
+                    'favorite',
+                    'createdAt',
+                    'updatedAt',
+                ],
             ]);
 
         // Assert that the milestone data is correct
-        $this->assertEquals($this->milestone->id, $response->json('id'));
-        $this->assertEquals($this->milestone->name, $response->json('name'));
-        $this->assertEquals($this->milestone->longitudinal, $response->json('longitudinal'));
-        $this->assertEquals($this->milestone->latitudinal, $response->json('latitudinal'));
+        $this->assertEquals($this->milestone->id, $response->json('data.id'));
+        $this->assertEquals($this->milestone->name, $response->json('data.name'));
+        $this->assertEquals($this->milestone->longitudinal, $response->json('data.longitudinal'));
+        $this->assertEquals($this->milestone->latitudinal, $response->json('data.latitudinal'));
     }
 
     #[Test]
@@ -332,18 +340,20 @@ class MilestoneControllerTest extends TestCase
 
         $response->assertStatus(200)
             ->assertJsonStructure([
-                '*' => [
-                'id',
-                'name',
-                'longitudinal',
-                'latitudinal',
-                'favorite',
-                'created_at',
-                'updated_at',
+                'data' => [
+                    '*' => [
+                        'id',
+                        'name',
+                        'longitudinal',
+                        'latitudinal',
+                        'favorite',
+                        'createdAt',
+                        'updatedAt',
+                    ],
                 ],
             ]);
 
-        $this->assertCount(0, $response->json());
+        $this->assertCount(0, $response->json('data'));
     }
 
     #[Test]

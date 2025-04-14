@@ -7,6 +7,8 @@ use App\Http\Requests\StoreTaskRequest;
 use App\Http\Requests\UpdateTaskRequest;
 use App\Http\Resources\TaskResource;
 use App\Models\Task;
+use App\Models\User;
+use Symfony\Component\HttpKernel\Exception\AccessDeniedHttpException;
 
 class TaskController extends Controller
 {
@@ -44,16 +46,27 @@ class TaskController extends Controller
     /**
      * Update the specified resource in storage.
      */
-    public function update(UpdateTaskRequest $request, Task $task)
+    public function update(UpdateTaskRequest $request, $task)
     {
-        //
+        $taskInstance = Task::findOrFail($task);
+
+        $taskInstance->update($request->validated());
+        // Return the updated task with camelCase attributes
+        return new TaskResource($taskInstance);
     }
 
     /**
      * Remove the specified resource from storage.
      */
-    public function destroy(Task $task)
+    public function destroy($task)
     {
-        //
+        $taskInstance = Task::findOrFail($task);
+
+        if (request()->user('api')->can('delete', $taskInstance)) {
+            $taskInstance->delete();
+            return response()->json(['message' => 'Task deleted successfully'], 200);
+        } else {
+            throw new AccessDeniedHttpException();
+        }
     }
 }

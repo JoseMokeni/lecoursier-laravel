@@ -45,6 +45,6 @@ class TaskPolicy
      */
     public function delete(User $user, Task $task): bool
     {
-        return $user->isAdmin() && $task->status === 'pending';
+        return $user->isAdmin();
     }
 }

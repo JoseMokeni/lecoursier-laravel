@@ -41,9 +41,6 @@ class StoreTaskRequest extends FormRequest
             'due_date' => 'sometimes|required|date',
             'user_id' => 'required|exists:users,id',
             'milestone_id' => 'required|exists:milestones,id',
-            // Support for camelCase inputs
-            'userId' => 'sometimes|exists:users,id',
-            'milestoneId' => 'sometimes|exists:milestones,id',
         ];
     }
 }

@@ -1,6 +1,9 @@
 <?php
 
+use App\Http\Controllers\Api\MilestoneController;
+use App\Http\Controllers\Api\TaskController;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Gate;
 use Illuminate\Support\Facades\Route;
 
 Route::get('/user', function (Request $request) {
@@ -44,4 +47,15 @@ Route::middleware(['api.tenant.context', 'api.active.tenant', 'api.tenant.subscr
                 ]);
             });
         });
+
+        // Milestone routes
+        Route::apiResource('milestones', MilestoneController::class)
+            ->middleware('api.auth');
+
+        // Task routes
+        Route::apiResource('tasks', TaskController::class)
+            ->middleware('api.auth');
     });
+
+
+

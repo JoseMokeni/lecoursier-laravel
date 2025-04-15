@@ -11,7 +11,7 @@ class StoreMilestoneRequest extends FormRequest
      */
     public function authorize(): bool
     {
-        return false;
+        return $this->user('api')->can('create', \App\Models\Milestone::class);
     }
 
     /**
@@ -22,7 +22,10 @@ class StoreMilestoneRequest extends FormRequest
     public function rules(): array
     {
         return [
-            //
+            'name' => 'required|string|max:255',
+            'longitudinal' => 'required|string|max:255',
+            'latitudinal' => 'required|string|max:255',
+            'favorite' => 'boolean',
         ];
     }
 }

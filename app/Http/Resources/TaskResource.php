@@ -23,7 +23,13 @@ class TaskResource extends JsonResource
             'dueDate' => $this->due_date,
             'completedAt' => $this->completed_at,
             'userId' => $this->user_id,
+            'user' => $this->whenLoaded('user', function () {
+                return new UserResource($this->user);
+            }),
             'milestoneId' => $this->milestone_id,
+            'milestone' => $this->whenLoaded('milestone', function () {
+                return new MilestoneResource($this->milestone);
+            }),
             'createdAt' => $this->created_at,
             'updatedAt' => $this->updated_at,
         ];

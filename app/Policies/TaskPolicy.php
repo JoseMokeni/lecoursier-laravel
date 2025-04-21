@@ -37,7 +37,7 @@ class TaskPolicy
      */
     public function update(User $user, Task $task): bool
     {
-        return true;
+        return $user->isAdmin() || $user->id === $task->user_id;
     }
 
     /**

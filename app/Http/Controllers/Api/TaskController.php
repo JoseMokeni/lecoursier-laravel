@@ -17,9 +17,17 @@ class TaskController extends Controller
      */
     public function index()
     {
-        $tasks = Task::with(['milestone', 'user'])->get();
+        $role = request()->user('api')->role;
+        if ($role === "admin"){
+            $tasks = Task::with(['milestone', 'user'])->get();
+            return TaskResource::collection($tasks);
+        }
+        else {
+            $userId = request()->user('api')->id;
+            $tasks = Task::with(['milestone', 'user'])->where('user_id', $userId)->get();
+            return TaskResource::collection($tasks);
+        }
 
-        return TaskResource::collection($tasks);
     }
 
     /**

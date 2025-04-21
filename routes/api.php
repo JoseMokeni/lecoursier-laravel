@@ -46,6 +46,10 @@ Route::middleware(['api.tenant.context', 'api.active.tenant', 'api.tenant.subscr
                     'user' => $request->user('api'),
                 ]);
             });
+
+            Route::get('/users', function (Request $request) {
+                return \App\Http\Resources\UserResource::collection(\App\Models\User::where('role', 'user')->get());
+            });
         });
 
         // Milestone routes
@@ -55,6 +59,7 @@ Route::middleware(['api.tenant.context', 'api.active.tenant', 'api.tenant.subscr
         // Task routes
         Route::apiResource('tasks', TaskController::class)
             ->middleware('api.auth');
+
     });
 
 

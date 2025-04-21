@@ -17,9 +17,17 @@ class TaskController extends Controller
      */
     public function index()
     {
-        $tasks = Task::all();
+        $role = request()->user('api')->role;
+        if ($role === "admin"){
+            $tasks = Task::with(['milestone', 'user'])->get();
+            return TaskResource::collection($tasks);
+        }
+        else {
+            $userId = request()->user('api')->id;
+            $tasks = Task::with(['milestone', 'user'])->where('user_id', $userId)->get();
+            return TaskResource::collection($tasks);
+        }
 
-        return TaskResource::collection($tasks);
     }
 
     /**
@@ -32,6 +40,7 @@ class TaskController extends Controller
 
         // Create a new task
         $task = Task::create($validatedData);
+        $task->load(['milestone', 'user']);
 
         // Return the created task with camelCase attributes
         return (new TaskResource($task))
@@ -44,7 +53,7 @@ class TaskController extends Controller
      */
     public function show(Task $task)
     {
-        return new TaskResource($task);
+        return new TaskResource($task->load(['milestone', 'user']));
     }
 
     /**
@@ -58,7 +67,7 @@ class TaskController extends Controller
         $taskInstance->update($request->validated());
 
         // Return the updated task with camelCase attributes
-        return new TaskResource($taskInstance->fresh());
+        return new TaskResource($taskInstance->fresh()->load(['milestone', 'user']));
     }
 
     /**

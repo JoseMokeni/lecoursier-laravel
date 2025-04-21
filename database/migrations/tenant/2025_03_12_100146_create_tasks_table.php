@@ -19,8 +19,8 @@ return new class extends Migration
             $table->string('status')->default('pending');
             $table->timestamp('completed_at')->nullable();
             $table->timestamp('due_date')->nullable();
-            $table->foreignId('user_id')->constrained();
-            $table->foreignId('milestone_id')->constrained();
+            $table->foreignId('user_id')->constrained()->onDelete('cascade');
+            $table->foreignId('milestone_id')->constrained()->onDelete('cascade');
             $table->timestamps();
         });
     }

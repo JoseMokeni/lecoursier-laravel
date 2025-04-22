@@ -59,6 +59,10 @@ Route::middleware(['api.tenant.context', 'api.active.tenant', 'api.tenant.subscr
         // Task routes
         Route::apiResource('tasks', TaskController::class)
             ->middleware('api.auth');
+        Route::post('/tasks/{task}/complete', [TaskController::class, 'complete'])
+            ->middleware('api.auth');
+        Route::post('/tasks/{task}/start', [TaskController::class, 'start'])
+            ->middleware('api.auth');
 
     });
 

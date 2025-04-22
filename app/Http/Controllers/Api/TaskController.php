@@ -84,4 +84,34 @@ class TaskController extends Controller
             throw new AccessDeniedHttpException();
         }
     }
+
+    /**
+     * Change the status of the task to in progress.
+     */
+    public function start($task)
+    {
+        $taskInstance = Task::findOrFail($task);
+
+        if (request()->user('api')->can('update', $taskInstance)) {
+            $taskInstance->update(['status' => 'in_progress']);
+            return new TaskResource($taskInstance->fresh()->load(['milestone', 'user']));
+        } else {
+            throw new AccessDeniedHttpException();
+        }
+    }
+
+    /**
+     * Change the status of the task to completed.
+     */
+    public function complete($task)
+    {
+        $taskInstance = Task::findOrFail($task);
+
+        if (request()->user('api')->can('update', $taskInstance)) {
+            $taskInstance->update(['status' => 'completed', 'completed_at' => now()]);
+            return new TaskResource($taskInstance->fresh()->load(['milestone', 'user']));
+        } else {
+            throw new AccessDeniedHttpException();
+        }
+    }
 }

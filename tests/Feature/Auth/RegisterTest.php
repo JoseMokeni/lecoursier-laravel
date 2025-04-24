@@ -41,6 +41,7 @@ class RegisterTest extends TestCase
             "email" => Faker::create()->email(),
             "phone" => Faker::create()->phoneNumber(),
             "code" => Faker::create()->word(),
+            "address" => Faker::create()->address(),
         ];
 
         // Disable CSRF middleware for this test
@@ -60,14 +61,6 @@ class RegisterTest extends TestCase
 
         // Initialize the tenant
         tenancy()->initialize($tenant);
-
-        // Assert that the company was created
-        $company = Company::where('email', $formData['email'])->first();
-        $this->assertNotNull($company);
-        $this->assertEquals($formData['email'], $company->email);
-        $this->assertEquals($formData['name'], $company->name);
-        $this->assertEquals($formData['phone'], $company->phone);
-        $this->assertEquals($formData['code'], $company->code);
 
         // Assert that the user was created
         $user = User::where('email', $formData['email'])->first();
@@ -102,6 +95,7 @@ class RegisterTest extends TestCase
             "email" => Faker::create()->email(),
             "phone" => Faker::create()->phoneNumber(),
             "code" => $existingCode, // Using existing code to trigger validation error
+            "address" => Faker::create()->address(),
         ];
 
         // Disable CSRF middleware for this test
@@ -151,6 +145,7 @@ class RegisterTest extends TestCase
             "email" => Faker::create()->email(),
             "phone" => Faker::create()->phoneNumber(),
             "code" => Faker::create()->word(),
+            "address" => Faker::create()->address(),
         ];
 
         // Disable CSRF middleware for this test

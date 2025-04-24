@@ -7,9 +7,12 @@ This document provides a comprehensive overview of the test suite for the Le Cou
 -   Overview
 -   Feature Tests
     -   Authentication Tests
+    -   API Authentication Tests
     -   User Management Tests
     -   Middleware Tests
     -   Controller Tests
+    -   API Controller Tests
+    -   Page Load Tests (Pest)
 -   Unit Tests
     -   Contact Form Tests
 -   Browser Tests
@@ -18,9 +21,9 @@ This document provides a comprehensive overview of the test suite for the Le Cou
 
 The application follows a multi-tenancy architecture using the `stancl/tenancy` package. Most tests are built using PHPUnit with some newer tests using Pest PHP syntax. The test suite is divided into:
 
--   **Feature Tests**: Integration tests for authentication flows and user management
--   **Unit Tests**: Focused tests for specific components like the contact form
--   **Browser Tests**: Basic page loading tests
+-   **Feature Tests**: Integration tests for authentication flows, user management, API endpoints, and basic page loading.
+-   **Unit Tests**: Focused tests for specific components like the contact form.
+-   **Browser Tests**: Basic page loading tests (Note: `PageLoadTest.php` is currently under Feature Tests).
 
 The custom `DatabaseRefresh` trait is used to manage test databases, particularly for tenant databases in the SQLite-based testing environment.
 
@@ -56,7 +59,7 @@ The custom `DatabaseRefresh` trait is used to manage test databases, particularl
 | `test_registration_completes_when_mail_fails` | Tests that registration succeeds even if email sending fails | Registration completes successfully despite mail failure                                         |
 | `test_validation_error_messages`              | Tests specific error message content                         | Error messages match expected language text                                                      |
 
-#### API Authentication Tests (`tests/Feature/Api/Auth/ApiLoginTest.php`)
+### API Authentication Tests (`tests/Feature/Api/Auth/ApiLoginTest.php`)
 
 | Test Case                                       | Description                                                 | Assertions                                                  |
 | ----------------------------------------------- | ----------------------------------------------------------- | ----------------------------------------------------------- |
@@ -119,16 +122,16 @@ The custom `DatabaseRefresh` trait is used to manage test databases, particularl
 | ----------------------------------------------- | --------------------------------------------------------------- | -------------------------------------------------------------------- |
 | `test_middleware_rejects_missing_tenant_header` | Tests that middleware rejects requests without tenant ID header | Returns 403 status with error message about missing tenant ID header |
 | `test_middleware_rejects_inactive_tenant`       | Tests that middleware rejects inactive tenants                  | Returns 403 status with message about inactive tenant                |
-| `test_middleware_allows_active_tenant`          | Tests that middleware allows requests with active tenant        | Request passes through middleware to next step in the pipeline       |
+| `test_middleware_allows_active_tenant`          | Tests that middleware allows requests with active tenant        | Request passes through middleware (results in 401 for login test)    |
 | `test_middleware_rejects_nonexistent_tenant`    | Tests that middleware rejects non-existent tenant IDs           | Returns 403 status with error message about invalid tenant ID        |
 
 #### ActiveTenantMiddleware Tests (`tests/Feature/Middleware/ActiveTenantMiddlewareTest.php`)
 
 | Test Case                                      | Description                                              | Assertions                                                    |
 | ---------------------------------------------- | -------------------------------------------------------- | ------------------------------------------------------------- |
-| `test_middleware_redirects_missing_tenant_id`  | Tests redirection when tenant ID is missing from session | User is redirected to login page when no tenant ID in session |
+| `test_middleware_redirects_missing_tenant_id`  | Tests redirection when tenant ID is missing from session | Returns 200 (login page) when no tenant ID in session         |
 | `test_middleware_redirects_inactive_tenant`    | Tests redirection for inactive tenants                   | User is redirected when tenant is inactive                    |
-| `test_middleware_allows_active_tenant`         | Tests that middleware allows active tenants              | Request passes through middleware with active tenant          |
+| `test_middleware_allows_active_tenant`         | Tests that middleware allows active tenants              | Request passes through middleware with active tenant (200 OK) |
 | `test_middleware_redirects_nonexistent_tenant` | Tests redirection for non-existent tenant IDs            | User is redirected when tenant ID doesn't exist               |
 
 #### ActiveTenantExceptAdminMiddleware Tests (`tests/Feature/Middleware/ActiveTenantExceptAdminMiddlewareTest.php`)
@@ -158,6 +161,53 @@ The custom `DatabaseRefresh` trait is used to manage test databases, particularl
 | `test_tenant_deactivation`                             | Tests tenant deactivation process                     | Tenant is successfully deactivated with success message  |
 | `test_tenant_settings_not_accessible_to_regular_admin` | Tests that only main admin can access tenant settings | Regular admins are redirected with access denied message |
 
+### API Controller Tests
+
+#### Task Controller Tests (`tests/Feature/Api/TaskControllerTest.php`)
+
+| Test Case                                                 | Description                                                 | Assertions                                                               |
+| --------------------------------------------------------- | ----------------------------------------------------------- | ------------------------------------------------------------------------ |
+| `users_can_get_all_tasks`                                 | Tests that authenticated users can retrieve a list of tasks | Returns 200 status with a list of tasks                                  |
+| `admin_can_create_task`                                   | Tests that admin users can create a new task                | Returns 201 status, task created in DB, correct task data in response    |
+| `regular_users_cannot_create_task`                        | Tests that regular users are forbidden from creating tasks  | Returns 403 status                                                       |
+| `users_can_update_task`                                   | Tests that authenticated users can update an existing task  | Returns 200 status, task updated in DB, correct updated data in response |
+| `admin_can_delete_task`                                   | Tests that admin users can delete a task                    | Returns 200 status, task removed from DB                                 |
+| `regular_users_cannot_delete_task`                        | Tests that regular users are forbidden from deleting tasks  | Returns 403 status                                                       |
+| `validation_error_when_creating_task_with_missing_fields` | Tests validation rules when creating a task                 | Returns 422 status with validation errors for required fields            |
+| `unauthenticated_users_cannot_access_task_endpoints`      | Tests that unauthenticated users cannot access task routes  | Returns 401 status for GET, POST, PUT, DELETE requests                   |
+| `users_can_get_single_task`                               | Tests that authenticated users can retrieve a specific task | Returns 200 status with the correct task data                            |
+| `users_can_complete_tasks`                                | Tests updating a task's status to 'completed'               | Returns 200 status, status is 'completed', completedAt is set            |
+
+#### Milestone Controller Tests (`tests/Feature/Api/MilestoneControllerTest.php`)
+
+| Test Case                                                      | Description                                                        | Assertions                                                                    |
+| -------------------------------------------------------------- | ------------------------------------------------------------------ | ----------------------------------------------------------------------------- |
+| `admin_can_get_all_milestones`                                 | Tests that admin users can retrieve a list of milestones           | Returns 200 status with a list of milestones                                  |
+| `regular_users_cannot_get_milestones`                          | Tests that regular users are forbidden from retrieving milestones  | Returns 403 status                                                            |
+| `admin_can_create_milestone`                                   | Tests that admin users can create a new milestone                  | Returns 201 status, milestone created in DB, correct data in response         |
+| `regular_users_cannot_create_milestone`                        | Tests that regular users are forbidden from creating milestones    | Returns 403 status                                                            |
+| `admin_can_update_milestone`                                   | Tests that admin users can update an existing milestone            | Returns 200 status, milestone updated in DB, correct updated data in response |
+| `regular_users_cannot_update_milestone`                        | Tests that regular users are forbidden from updating milestones    | Returns 403 status                                                            |
+| `admin_can_delete_milestone`                                   | Tests that admin users can delete a milestone                      | Returns 200 status, milestone removed from DB                                 |
+| `regular_users_cannot_delete_milestone`                        | Tests that regular users are forbidden from deleting milestones    | Returns 403 status                                                            |
+| `validation_error_when_creating_milestone_with_missing_fields` | Tests validation rules when creating a milestone                   | Returns 422 status with validation errors for required fields                 |
+| `unauthenticated_users_cannot_access_milestone_endpoints`      | Tests that unauthenticated users cannot access milestone routes    | Returns 401 status for GET, POST, PUT, DELETE requests                        |
+| `admin_can_get_single_milestone`                               | Tests that admin users can retrieve a specific milestone           | Returns 200 status with the correct milestone data                            |
+| `regular_users_cannot_get_single_milestone`                    | Tests that regular users are forbidden from retrieving a milestone | Returns 403 status                                                            |
+| `admin_can_get_favorite_milestones`                            | Tests that admin users can filter milestones by 'favorite' status  | Returns 200 status with a list of favorite milestones (or empty list)         |
+| `regular_users_cannot_get_favorite_milestones`                 | Tests that regular users are forbidden from filtering milestones   | Returns 403 status                                                            |
+
+### Page Load Tests (Pest) (`tests/Feature/PageLoadTest.php`)
+
+| Test Case                              | Description                                | Assertions                                  |
+| -------------------------------------- | ------------------------------------------ | ------------------------------------------- |
+| `loads the home page`                  | Tests the home/landing page loads          | Page loads with status 200 and correct view |
+| `loads the privacy page`               | Tests the privacy policy page loads        | Page loads with status 200 and correct view |
+| `loads the login page`                 | Tests the login page loads                 | Page loads with status 200 and correct view |
+| `loads the register page`              | Tests the registration page loads          | Page loads with status 200 and correct view |
+| `loads the tenant inactive error page` | Tests the tenant inactive error page loads | Page loads with status 200 and correct view |
+| `loads the tenant required error page` | Tests the tenant required error page loads | Page loads with status 200 and correct view |
+
 ## Unit Tests
 
 ### Contact Form Tests
@@ -170,7 +220,7 @@ The custom `DatabaseRefresh` trait is used to manage test databases, particularl
 | `test_contact_form_validates_required_fields`    | Tests validation for empty form submission  | Required fields are validated                  |
 | `test_contact_form_validates_email_format`       | Tests email format validation               | Invalid email format is rejected               |
 | `test_contact_form_validates_message_length`     | Tests message length validation             | Short messages are rejected                    |
-| `test_contact_form_handles_mail_exceptions`      | Tests form handling when mail sending fails | Form handles mail exceptions gracefully        |
+| `test_contact_form_handles_mail_exceptions`      | Tests form handling when mail sending fails | Form handles mail exceptions gracefully (500)  |
 | `test_contact_form_validates_min_name_length`    | Tests minimum name length validation        | Names that are too short are rejected          |
 | `test_contact_form_validates_max_name_length`    | Tests maximum name length validation        | Names that are too long are rejected           |
 | `test_contact_form_validates_max_email_length`   | Tests maximum email length validation       | Emails that are too long are rejected          |
@@ -180,14 +230,16 @@ The custom `DatabaseRefresh` trait is used to manage test databases, particularl
 
 ## Browser Tests
 
-### Page Load Tests (`tests/Browser/PageLoadTest.php`)
+_(Note: The `PageLoadTest.php` file is currently located in `tests/Feature` and uses Pest syntax. It is documented under Feature Tests.)_
+
+<!-- Example structure if Browser tests were added later -->
+<!--
+### Example Browser Test (`tests/Browser/ExampleTest.php`)
 
 | Test Case                 | Description                         | Assertions                                  |
 | ------------------------- | ----------------------------------- | ------------------------------------------- |
-| `loads the home page`     | Tests the home/landing page loads   | Page loads with status 200 and correct view |
-| `loads the privacy page`  | Tests the privacy policy page loads | Page loads with status 200 and correct view |
-| `loads the login page`    | Tests the login page loads          | Page loads with status 200 and correct view |
-| `loads the register page` | Tests the registration page loads   | Page loads with status 200 and correct view |
+| `example test`            | Example description                 | Example assertion                           |
+-->
 
 ---
 

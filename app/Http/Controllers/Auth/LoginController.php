@@ -5,14 +5,9 @@ namespace App\Http\Controllers\Auth;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\LoginRequest;
 use App\Models\Tenant;
-use Illuminate\Container\Attributes\Log;
-use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Http\RedirectResponse;
-use Illuminate\Support\Facades\Cookie;
-use Illuminate\Support\Facades\Log as FacadesLog;
 use Illuminate\View\View;
-use Tenancy\Facades\Tenancy;
 
 class LoginController extends Controller
 {
@@ -66,10 +61,12 @@ class LoginController extends Controller
         tenancy()->initialize($tenant);
 
         // Attempt authentication
-        if (Auth::attempt([
-            'username' => $validated['username'],
-            'password' => $validated['password']
-        ])) {
+        if (
+            Auth::attempt([
+                'username' => $validated['username'],
+                'password' => $validated['password']
+            ])
+        ) {
             // Check if user is admin, if not, log them out
             if (Auth::user()->role !== 'admin') {
                 Auth::logout();

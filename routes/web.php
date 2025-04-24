@@ -1,5 +1,6 @@
 <?php
 
+use App\Models\Tenant;
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\ContactController;
 use App\Http\Controllers\Auth\RegisterController;
@@ -20,7 +21,7 @@ foreach (config('tenancy.central_domains') as $domain) {
         // Session debug route - add this route temporarily
         Route::get('/debug-session', function () {
             $tenantId = session('tenant_id');
-            $tenant = $tenantId ? \App\Models\Tenant::find($tenantId) : null;
+            $tenant = $tenantId ? Tenant::find($tenantId) : null;
 
             return [
                 'session_has_tenant_id' => !is_null($tenantId),
@@ -87,38 +88,80 @@ foreach (config('tenancy.central_domains') as $domain) {
     Route::group([
         'middleware' => ['web', 'tenant.auth']
     ], function () {
-        Route::get('/dashboard', [DashboardController::class, 'index'])->name('dashboard');
+        Route::get('/dashboard', [DashboardController::class, 'index'])
+            ->middleware(['web.tenant.subscribed'])
+            ->name('dashboard');
 
         // User management routes
         Route::get('/users', [UserController::class, 'index'])
-            ->middleware(['web.active.tenant'])
+            ->middleware(['web.active.tenant', 'web.tenant.subscribed'])
             ->name('users.index');
         Route::get('/users/create', [UserController::class, 'create'])
-            ->middleware(['web.active.tenant'])
+            ->middleware(['web.active.tenant', 'web.tenant.subscribed'])
             ->name('users.create');
         Route::post('/users', [UserController::class, 'store'])
-            ->middleware(['web.active.tenant'])
+            ->middleware(['web.active.tenant', 'web.tenant.subscribed'])
             ->name('users.store');
         Route::get('/users/{id}/edit', [UserController::class, 'edit'])
-            ->middleware(['web.active.tenant'])
+            ->middleware(['web.active.tenant', 'web.tenant.subscribed'])
             ->name('users.edit');
         Route::put('/users/{id}', [UserController::class, 'update'])
-            ->middleware(['web.active.tenant'])
+            ->middleware(['web.active.tenant', 'web.tenant.subscribed'])
             ->name('users.update');
         Route::delete('/users/{id}', [UserController::class, 'destroy'])
-            ->middleware(['web.active.tenant'])
+            ->middleware(['web.active.tenant', 'web.tenant.subscribed'])
             ->name('users.destroy');
 
         // Tenant management routes (admin only)
         Route::get('/tenants/settings', [TenantController::class, 'settings'])
-            ->middleware(['main.admin.only'])
+            ->middleware(['main.admin.only', 'web.tenant.subscribed'])
             ->name('tenant.settings');
+
         Route::put('/tenants/{id}/activate', [TenantController::class, 'activate'])
-            ->middleware(['main.admin.only'])
+            ->middleware(['main.admin.only', 'web.tenant.subscribed'])
             ->name('tenant.activate');
         Route::put('/tenants/{id}/deactivate', [TenantController::class, 'deactivate'])
-            ->middleware(['main.admin.only'])
+            ->middleware(['main.admin.only', 'web.tenant.subscribed'])
             ->name('tenant.deactivate');
+
+        // Billing routes
+        Route::get('/billing', function () {
+            return view('pages.billing.index');
+        })->middleware(['main.admin.only'])->name('billing');
+
+        Route::get('/billing/plans', function () {
+            return view('pages.tenants.plans');
+        })
+            ->middleware(['main.admin.only'])
+            ->name('billing.plans');
+
+        Route::get('/billing/checkout/{type?}', function (Request $request, $type = 'monthly') {
+            $tenant = Tenant::find(session()->get('tenant_id'));
+            if (!$tenant) {
+                return redirect()->route('error.tenant-required');
+            }
+
+            $priceId = config('cashier.prices.monthly');
+
+            $productId = config('cashier.products.default');
+
+            if ($type === 'yearly') {
+                $priceId = config('cashier.prices.yearly');
+            }
+
+            return $tenant
+                ->newSubscription($productId, $priceId)
+                ->checkout([
+                    'success_url' => route('dashboard'),
+                    'cancel_url' => route('billing'),
+                ]);
+        })
+            ->middleware(['main.admin.only'])
+            ->name('billing.checkout');
+
+        Route::get('/billing/portal', function (Request $request) {
+            return tenancy()->tenant->redirectToBillingPortal(route('billing'));
+        })->middleware(['main.admin.only'])->name('billing.portal');
     });
 }
 

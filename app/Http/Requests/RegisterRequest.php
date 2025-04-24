@@ -26,6 +26,7 @@ class RegisterRequest extends FormRequest
             'email' => ['required', 'string', 'email', 'max:255'],
             'code' => ['required', 'string', 'max:50'],
             'phone' => ['required', 'string', 'max:20'],
+            'address' => ['nullable', 'string', 'max:255'],
         ];
     }
 
@@ -44,6 +45,8 @@ class RegisterRequest extends FormRequest
             'code.required' => 'Company code is required',
             'code.unique' => 'This company code is already in use',
             'phone.required' => 'Company phone number is required',
+            'address.string' => 'Company address must be a string',
+            'address.max' => 'Company address may not be greater than 255 characters',
         ];
     }
 }

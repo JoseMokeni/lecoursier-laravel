@@ -66,5 +66,7 @@ Route::middleware(['api.tenant.context', 'api.active.tenant', 'api.tenant.subscr
 
     });
 
-
+Route::get('/health', function () {
+    return response()->json(['status' => 'ok']);
+})->name('api.health');
 

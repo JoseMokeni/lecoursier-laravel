@@ -164,4 +164,3 @@ foreach (config('tenancy.central_domains') as $domain) {
         })->middleware(['main.admin.only'])->name('billing.portal');
     });
 }
-

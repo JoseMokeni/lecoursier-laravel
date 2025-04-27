@@ -52,6 +52,9 @@ COPY ./docker/php/xdebug.ini /usr/local/etc/php/conf.d/xdebug.ini
 COPY . /var/www/html
 RUN chown -R service:service /var/www/html
 
+# Configure Apache to listen on port 8080 instead of 80
+RUN sed -i 's/Listen 80/Listen 8080/g' /etc/apache2/ports.conf
+
 # Switch back to 'service' user
 USER service
 
@@ -59,8 +62,8 @@ USER service
 RUN composer install --no-scripts --no-autoloader
 RUN composer dump-autoload
 
-# Expose port 80
-EXPOSE 80
+# Expose port 8080
+EXPOSE 8080
 
-# Update to start PHP-FPM instead of Apache
+# Start Apache in the foreground
 CMD ["apache2-foreground"]

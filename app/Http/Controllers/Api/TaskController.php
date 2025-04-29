@@ -2,6 +2,8 @@
 
 namespace App\Http\Controllers\Api;
 
+use App\Events\TaskCreated;
+use App\Events\TaskDeleted;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\StoreTaskRequest;
 use App\Http\Requests\UpdateTaskRequest;
@@ -42,6 +44,8 @@ class TaskController extends Controller
         $task = Task::create($validatedData);
         $task->load(['milestone', 'user']);
 
+        broadcast(new TaskCreated(new TaskResource($task)));
+
         // Return the created task with camelCase attributes
         return (new TaskResource($task))
             ->response()
@@ -79,6 +83,7 @@ class TaskController extends Controller
 
         if (request()->user('api')->can('delete', $taskInstance)) {
             $taskInstance->delete();
+            broadcast(new TaskDeleted($taskInstance->id));
             return response()->json(['message' => 'Task deleted successfully'], 200);
         } else {
             throw new AccessDeniedHttpException();

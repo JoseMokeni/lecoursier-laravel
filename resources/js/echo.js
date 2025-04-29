@@ -1,14 +1,15 @@
-import Echo from 'laravel-echo';
+// resources/js/bootstrap.js or wherever you configure Echo
+import Echo from "laravel-echo";
+import Pusher from "pusher-js";
 
-import Pusher from 'pusher-js';
 window.Pusher = Pusher;
-
 window.Echo = new Echo({
-    broadcaster: 'reverb',
-    key: import.meta.env.VITE_REVERB_APP_KEY,
-    wsHost: import.meta.env.VITE_REVERB_HOST,
-    wsPort: import.meta.env.VITE_REVERB_PORT ?? 80,
-    wssPort: import.meta.env.VITE_REVERB_PORT ?? 443,
-    forceTLS: (import.meta.env.VITE_REVERB_SCHEME ?? 'https') === 'https',
-    enabledTransports: ['ws', 'wss'],
+    broadcaster: "pusher",
+    key: import.meta.env.VITE_PUSHER_APP_KEY,
+    wsHost: import.meta.env.VITE_PUSHER_HOST || window.location.hostname,
+    wsPort: import.meta.env.VITE_PUSHER_PORT || 6001,
+    wssPort: import.meta.env.VITE_PUSHER_PORT || 6001,
+    forceTLS: (import.meta.env.VITE_PUSHER_SCHEME || "https") === "https",
+    enabledTransports: ["ws", "wss"],
+    disableStats: true,
 });

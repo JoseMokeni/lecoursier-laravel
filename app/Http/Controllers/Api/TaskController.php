@@ -4,6 +4,7 @@ namespace App\Http\Controllers\Api;
 
 use App\Events\TaskCreated;
 use App\Events\TaskDeleted;
+use App\Events\TaskUpdated;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\StoreTaskRequest;
 use App\Http\Requests\UpdateTaskRequest;
@@ -70,6 +71,9 @@ class TaskController extends Controller
         // Update the task with the validated data
         $taskInstance->update($request->validated());
 
+        // Broadcast the task update event
+        broadcast(new TaskUpdated(new TaskResource($taskInstance->fresh()->load(['milestone', 'user']))));
+
         // Return the updated task with camelCase attributes
         return new TaskResource($taskInstance->fresh()->load(['milestone', 'user']));
     }
@@ -99,6 +103,9 @@ class TaskController extends Controller
 
         if (request()->user('api')->can('update', $taskInstance)) {
             $taskInstance->update(['status' => 'in_progress']);
+            // Broadcast the task update event
+            broadcast(new TaskUpdated(new TaskResource($taskInstance->fresh()->load(['milestone', 'user']))));
+
             return new TaskResource($taskInstance->fresh()->load(['milestone', 'user']));
         } else {
             throw new AccessDeniedHttpException();
@@ -114,6 +121,9 @@ class TaskController extends Controller
 
         if (request()->user('api')->can('update', $taskInstance)) {
             $taskInstance->update(['status' => 'completed', 'completed_at' => now()]);
+            // Broadcast the task update event
+            broadcast(new TaskUpdated(new TaskResource($taskInstance->fresh()->load(['milestone', 'user']))));
+
             return new TaskResource($taskInstance->fresh()->load(['milestone', 'user']));
         } else {
             throw new AccessDeniedHttpException();

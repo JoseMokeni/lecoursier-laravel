@@ -31,7 +31,17 @@ class TenantSubscribedMiddleware
                 session()->put('subscribed', false);
                 // remove remaining days if present
                 session()->forget('remaining_days');
-                return redirect()->route('billing')->with('error', 'Your trial or your subscription has ended. Please subscribe to continue using the service.');
+                if ($request->user()->username == session()->get('tenant_id')){
+                    return redirect()->route('billing')->with('error', 'Votre période d\'essai ou votre abonnement est terminé. Veuillez vous abonner pour continuer à utiliser le service.');
+                }
+                else {
+                    // if the user was trying to access dashboard, just next with error
+
+                    if ($request->routeIs('dashboard')) {
+                        return $next($request);
+                    }
+                    return redirect()->route('dashboard')->with('error', 'Votre période d\'essai ou votre abonnement est terminé. Veuillez vous abonner pour continuer à utiliser le service.');
+                }
             } else {
                 // the trial is still active
                 session()->put('subscribed', true);

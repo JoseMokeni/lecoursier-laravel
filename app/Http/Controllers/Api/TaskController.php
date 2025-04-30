@@ -45,7 +45,10 @@ class TaskController extends Controller
         $task = Task::create($validatedData);
         $task->load(['milestone', 'user']);
 
-        broadcast(new TaskCreated(new TaskResource($task)));
+        // get tenantId from x-tenant-id header
+        $tenantId = request()->header('x-tenant-id');
+
+        broadcast(new TaskCreated(new TaskResource($task), $tenantId, $task->user->username));
 
         // Return the created task with camelCase attributes
         return (new TaskResource($task))
@@ -71,8 +74,11 @@ class TaskController extends Controller
         // Update the task with the validated data
         $taskInstance->update($request->validated());
 
+        // get tenantId from x-tenant-id header
+        $tenantId = request()->header('x-tenant-id');
+
         // Broadcast the task update event
-        broadcast(new TaskUpdated(new TaskResource($taskInstance->fresh()->load(['milestone', 'user']))));
+        broadcast(new TaskUpdated(new TaskResource($taskInstance->fresh()->load(['milestone', 'user'])), $tenantId));
 
         // Return the updated task with camelCase attributes
         return new TaskResource($taskInstance->fresh()->load(['milestone', 'user']));
@@ -85,9 +91,14 @@ class TaskController extends Controller
     {
         $taskInstance = Task::findOrFail($task);
 
+        // load the user to get the user's username
+        $taskInstance->load('user');
+
         if (request()->user('api')->can('delete', $taskInstance)) {
             $taskInstance->delete();
-            broadcast(new TaskDeleted($taskInstance->id));
+            // get tenantId from x-tenant-id header
+            $tenantId = request()->header('x-tenant-id');
+            broadcast(new TaskDeleted($taskInstance->id, $tenantId, $taskInstance->user->username));
             return response()->json(['message' => 'Task deleted successfully'], 200);
         } else {
             throw new AccessDeniedHttpException();
@@ -103,8 +114,10 @@ class TaskController extends Controller
 
         if (request()->user('api')->can('update', $taskInstance)) {
             $taskInstance->update(['status' => 'in_progress']);
+            // get tenantId from x-tenant-id header
+            $tenantId = request()->header('x-tenant-id');
             // Broadcast the task update event
-            broadcast(new TaskUpdated(new TaskResource($taskInstance->fresh()->load(['milestone', 'user']))));
+            broadcast(new TaskUpdated(new TaskResource($taskInstance->fresh()->load(['milestone', 'user'])), $tenantId));
 
             return new TaskResource($taskInstance->fresh()->load(['milestone', 'user']));
         } else {
@@ -121,8 +134,10 @@ class TaskController extends Controller
 
         if (request()->user('api')->can('update', $taskInstance)) {
             $taskInstance->update(['status' => 'completed', 'completed_at' => now()]);
+            // get tenantId from x-tenant-id header
+            $tenantId = request()->header('x-tenant-id');
             // Broadcast the task update event
-            broadcast(new TaskUpdated(new TaskResource($taskInstance->fresh()->load(['milestone', 'user']))));
+            broadcast(new TaskUpdated(new TaskResource($taskInstance->fresh()->load(['milestone', 'user'])), $tenantId));
 
             return new TaskResource($taskInstance->fresh()->load(['milestone', 'user']));
         } else {

@@ -21,10 +21,18 @@ class TaskUpdated implements ShouldBroadcastNow
     public TaskResource $task;
 
     /**
+     * The id of the tenant.
+     *
+     * @var string
+     */
+    public string $tenantId;
+
+    /**
      * Create a new event instance.
      */
-    public function __construct(TaskResource $task)
+    public function __construct(TaskResource $task, string $tenantId)
     {
+        $this->tenantId = $tenantId;
         $this->task = $task;
     }
 
@@ -36,7 +44,7 @@ class TaskUpdated implements ShouldBroadcastNow
     public function broadcastOn(): array
     {
         return [
-            new Channel('tasks'),
+            new Channel('tasks.' . $this->tenantId),
         ];
     }
 }

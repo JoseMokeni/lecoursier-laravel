@@ -14,15 +14,33 @@ class TaskDeleted implements ShouldBroadcastNow
 
     /**
      * The task instance id.
+     *
+     * @var int
      */
     public int $taskId;
 
     /**
+     * The id of the tenant.
+     *
+     * @var string
+     */
+    public string $tenantId;
+
+    /**
+     * The username of the user to whom the task belongs.
+     *
+     * @var string
+     */
+    public string $username;
+
+    /**
      * Create a new event instance.
      */
-    public function __construct(int $taskId)
+    public function __construct(int $taskId, string $tenantId, string $username)
     {
         $this->taskId = $taskId;
+        $this->tenantId = $tenantId;
+        $this->username = $username;
     }
 
     /**
@@ -33,7 +51,8 @@ class TaskDeleted implements ShouldBroadcastNow
     public function broadcastOn(): array
     {
         return [
-            new Channel('tasks'),
+            new Channel('tasks.' . $this->tenantId),
+            new Channel('tasks.' . $this->tenantId . '.' . $this->username),
         ];
     }
 }

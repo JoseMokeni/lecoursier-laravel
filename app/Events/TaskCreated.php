@@ -23,11 +23,27 @@ class TaskCreated implements ShouldBroadcastNow
     public TaskResource $task;
 
     /**
+     * The id of the tenant.
+     *
+     * @var string
+     */
+    public string $tenantId;
+
+    /**
+     * The username of the user to whom the task belongs.
+     *
+     * @var string
+     */
+    public string $username;
+
+    /**
      * Create a new event instance.
      */
-    public function __construct(TaskResource $task)
+    public function __construct(TaskResource $task, string $tenantId, string $username)
     {
         $this->task = $task;
+        $this->tenantId = $tenantId;
+        $this->username = $username;
     }
 
     /**
@@ -38,7 +54,8 @@ class TaskCreated implements ShouldBroadcastNow
     public function broadcastOn(): array
     {
         return [
-            new Channel('tasks'),
+            new Channel('tasks.' . $this->tenantId),
+            new Channel('tasks.' . $this->tenantId . '.' . $this->username),
         ];
     }
 }

@@ -45,6 +45,7 @@ class TaskUpdated implements ShouldBroadcastNow
     {
         return [
             new Channel('tasks.' . $this->tenantId),
+            new Channel('tasks.' . $this->tenantId . '.' . $this->task->user->username),
         ];
     }
 }

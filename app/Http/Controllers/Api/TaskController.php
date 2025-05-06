@@ -22,11 +22,31 @@ class TaskController extends Controller
     {
         $role = request()->user('api')->role;
         if ($role === "admin"){
+            switch (request()->query('status')) {
+                case 'in_progress':
+                    $tasks = Task::with(['milestone', 'user'])->where('status', 'in_progress')->get();
+                    return TaskResource::collection($tasks);
+                case 'completed':
+                    $tasks = Task::with(['milestone', 'user'])->where('status', 'completed')->get();
+                    return TaskResource::collection($tasks);
+                default:
+                    break;
+            }
             $tasks = Task::with(['milestone', 'user'])->get();
             return TaskResource::collection($tasks);
         }
         else {
             $userId = request()->user('api')->id;
+            switch (request()->query('status')) {
+                case 'in_progress':
+                    $tasks = Task::with(['milestone', 'user'])->where('user_id', $userId)->where('status', 'in_progress')->get();
+                    return TaskResource::collection($tasks);
+                case 'completed':
+                    $tasks = Task::with(['milestone', 'user'])->where('user_id', $userId)->where('status', 'completed')->get();
+                    return TaskResource::collection($tasks);
+                default:
+                    break;
+            }
             $tasks = Task::with(['milestone', 'user'])->where('user_id', $userId)->get();
             return TaskResource::collection($tasks);
         }

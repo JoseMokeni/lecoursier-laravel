@@ -11,10 +11,18 @@ use App\Http\Requests\UpdateTaskRequest;
 use App\Http\Resources\TaskResource;
 use App\Models\Task;
 use App\Models\User;
+use App\Services\FcmService;
 use Symfony\Component\HttpKernel\Exception\AccessDeniedHttpException;
 
 class TaskController extends Controller
 {
+    protected FcmService $fcmService;
+
+    public function __construct()
+    {
+        $this->fcmService = new FcmService();
+    }
+
     /**
      * Display a listing of the resource.
      */
@@ -69,6 +77,10 @@ class TaskController extends Controller
         $tenantId = request()->header('x-tenant-id');
 
         broadcast(new TaskCreated(new TaskResource($task), $tenantId, $task->user->username));
+
+        // send fcm notification to the user
+        $this->fcmService->sendFcmNotification($task->user_id, 'Nouvelle tâche assignée', 'Une nouvelle tâche vous a été assignée: ' . $task->name);
+
 
         // Return the created task with camelCase attributes
         return (new TaskResource($task))

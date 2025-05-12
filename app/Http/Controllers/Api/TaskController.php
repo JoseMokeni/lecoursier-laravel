@@ -9,9 +9,11 @@ use App\Http\Controllers\Controller;
 use App\Http\Requests\StoreTaskRequest;
 use App\Http\Requests\UpdateTaskRequest;
 use App\Http\Resources\TaskResource;
+use App\Jobs\SendFcmNotification;
 use App\Models\Task;
 use App\Models\User;
 use App\Services\FcmService;
+use Illuminate\Support\Facades\Log;
 use Symfony\Component\HttpKernel\Exception\AccessDeniedHttpException;
 
 class TaskController extends Controller
@@ -79,8 +81,8 @@ class TaskController extends Controller
         broadcast(new TaskCreated(new TaskResource($task), $tenantId, $task->user->username));
 
         // send fcm notification to the user
-        $this->fcmService->sendFcmNotification($task->user_id, 'Nouvelle tâche assignée', 'Une nouvelle tâche vous a été assignée: ' . $task->name);
-
+        // $this->fcmService->sendFcmNotification($task->user_id, 'Nouvelle tâche assignée', 'Une nouvelle tâche vous a été assignée: ' . $task->name);
+        SendFcmNotification::dispatch($task->user_id, 'Nouvelle tâche assignée', 'Une nouvelle tâche vous a été assignée: ' . $task->name);
 
         // Return the created task with camelCase attributes
         return (new TaskResource($task))
@@ -148,8 +150,15 @@ class TaskController extends Controller
             $taskInstance->update(['status' => 'in_progress']);
             // get tenantId from x-tenant-id header
             $tenantId = request()->header('x-tenant-id');
-            // Broadcast the task update event
-            broadcast(new TaskUpdated(new TaskResource($taskInstance->fresh()->load(['milestone', 'user'])), $tenantId));
+            $taskInstance = $taskInstance->fresh()->load(['milestone', 'user']);
+
+            // send fcm notification to all admins
+            $admins = User::where('role', 'admin')->get();
+            foreach ($admins as $admin) {
+                SendFcmNotification::dispatch($admin->id, 'Tâche en cours', 'La tâche ' . $taskInstance->name . ' est maintenant en cours.');
+            }
+
+            broadcast(new TaskUpdated(new TaskResource($taskInstance), $tenantId));
 
             return new TaskResource($taskInstance->fresh()->load(['milestone', 'user']));
         } else {
@@ -168,8 +177,16 @@ class TaskController extends Controller
             $taskInstance->update(['status' => 'completed', 'completed_at' => now()]);
             // get tenantId from x-tenant-id header
             $tenantId = request()->header('x-tenant-id');
+            $taskInstance = $taskInstance->fresh()->load(['milestone', 'user']);
+
+            // send fcm notification to all admins
+            $admins = User::where('role', 'admin')->get();
+            foreach ($admins as $admin) {
+                SendFcmNotification::dispatch($admin->id, 'Tâche terminée', 'La tâche ' . $taskInstance->name . ' est maintenant terminée.');
+            }
+
             // Broadcast the task update event
-            broadcast(new TaskUpdated(new TaskResource($taskInstance->fresh()->load(['milestone', 'user'])), $tenantId));
+            broadcast(new TaskUpdated(new TaskResource($taskInstance), $tenantId));
 
             return new TaskResource($taskInstance->fresh()->load(['milestone', 'user']));
         } else {

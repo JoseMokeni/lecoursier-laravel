@@ -15,7 +15,7 @@ return new class extends Migration
             $table->id();
             $table->string('name');
             $table->text('description')->nullable();
-            $table->string('priority')->default('normal');
+            $table->string('priority')->default('medium');
             $table->string('status')->default('pending');
             $table->timestamp('completed_at')->nullable();
             $table->timestamp('due_date')->nullable();

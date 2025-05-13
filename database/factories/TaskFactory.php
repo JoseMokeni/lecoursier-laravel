@@ -20,17 +20,17 @@ class TaskFactory extends Factory
         $completed = $this->faker->boolean(20);
         $completedAt = $completed ? $this->faker->dateTimeBetween('-1 month', 'now') : null;
         $dueDate = $this->faker->dateTimeBetween('now', '+1 month');
+        $milestone = \App\Models\Milestone::factory()->create();
 
         return [
             'name' => $this->faker->sentence(3),
             'description' => $this->faker->paragraph(),
             'priority' => $this->faker->randomElement(['low', 'normal', 'high', 'urgent']),
             'status' => $this->faker->randomElement(['pending', 'in_progress', 'completed', 'canceled']),
-            'completed' => $completed,
             'completed_at' => $completedAt,
             'due_date' => $dueDate,
-            'answered_at' => $this->faker->optional(30)->dateTimeBetween('-2 weeks', 'now'),
             'user_id' => User::inRandomOrder()->first()?->id ?? User::factory(),
+            'milestone_id' => $milestone->id,
         ];
     }
 
@@ -41,7 +41,6 @@ class TaskFactory extends Factory
     {
         return $this->state(function () {
             return [
-                'completed' => true,
                 'completed_at' => $this->faker->dateTimeBetween('-1 month', 'now'),
                 'status' => 'completed',
             ];

@@ -96,7 +96,10 @@ foreach (config('tenancy.central_domains') as $domain) {
         // Statistics routes
         Route::get('/statistics', [StatisticsController::class, 'index'])
             ->middleware(['web.active.tenant', 'web.tenant.subscribed'])
-            ->name('statistics');
+            ->name('statistics.index');
+        Route::get('/statistics/couriers', [StatisticsController::class, 'couriers'])
+            ->middleware(['web.active.tenant', 'web.tenant.subscribed'])
+            ->name('statistics.couriers');
 
         // User management routes
         Route::get('/users', [UserController::class, 'index'])

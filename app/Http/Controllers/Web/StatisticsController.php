@@ -26,7 +26,16 @@ class StatisticsController extends Controller
             'tasksByDay' => $stats['tasks_by_day'],
             'tasksByMonth' => $stats['tasks_by_month'],
             'milestoneStats' => $stats['milestone_stats'],
-            'usersStats' => $stats['users_stats'],
+            'usersStats' => $stats['users_stats_top_5'],
+        ]);
+    }
+
+    public function couriers(Request $request)
+    {
+        $couriers = $this->statisticsService->getTasksByUserPaginated($request->get('page', 1));
+
+        return view('pages.statistics.couriers', [
+            'couriers' => $couriers
         ]);
     }
 }

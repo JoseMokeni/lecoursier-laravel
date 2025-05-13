@@ -127,6 +127,95 @@ class StatisticsService
     }
 
     /**
+     * Obtenir les statistiques des tâches par utilisateur avec pagination
+     *
+     * @param int $page
+     * @param int $perPage
+     * @return \Illuminate\Pagination\LengthAwarePaginator
+     */
+    public function getTasksByUserPaginated($page = 1, $perPage = 15)
+    {
+        $users = User::where('role', '!=', 'admin')
+            ->withCount([
+                'tasks as total_tasks',
+                'tasks as completed_tasks' => function ($query) {
+                    $query->where('status', 'completed');
+                },
+                'tasks as pending_tasks' => function ($query) {
+                    $query->where('status', 'pending');
+                },
+                'tasks as in_progress_tasks' => function ($query) {
+                    $query->where('status', 'in_progress');
+                }
+            ])
+            ->paginate($perPage, ['*'], 'page', $page);
+
+        $users->setCollection($users->getCollection()->map(function ($user) {
+            $completionRate = 0;
+            if ($user->total_tasks > 0) {
+                $completionRate = round(($user->completed_tasks / $user->total_tasks) * 100, 2);
+            }
+
+            return [
+                'id' => $user->id,
+                'name' => $user->name,
+                'username' => $user->username,
+                'total_tasks' => $user->total_tasks,
+                'completed_tasks' => $user->completed_tasks,
+                'pending_tasks' => $user->pending_tasks,
+                'in_progress_tasks' => $user->in_progress_tasks,
+                'completion_rate' => $completionRate,
+            ];
+        }));
+
+        return $users;
+    }
+
+    /**
+     * Obtenir les statistiques des tâches des 5 meilleurs coursiers
+     *
+     * @return array
+     */
+    public function getTasksByUserTop5()
+    {
+        $users = User::where('role', '!=', 'admin')
+        ->withCount([
+            'tasks as total_tasks',
+            'tasks as completed_tasks' => function ($query) {
+                $query->where('status', 'completed');
+            },
+            'tasks as pending_tasks' => function ($query) {
+                $query->where('status', 'pending');
+            },
+            'tasks as in_progress_tasks' => function ($query) {
+                $query->where('status', 'in_progress');
+            }
+        ])->get();
+
+        return $users->map(function ($user) {
+            $completionRate = 0;
+            if ($user->total_tasks > 0) {
+                $completionRate = round(($user->completed_tasks / $user->total_tasks) * 100, 2);
+            }
+
+            return [
+                'id' => $user->id,
+                'name' => $user->name,
+                'username' => $user->username,
+                'total_tasks' => $user->total_tasks,
+                'completed_tasks' => $user->completed_tasks,
+                'pending_tasks' => $user->pending_tasks,
+                'in_progress_tasks' => $user->in_progress_tasks,
+                'completion_rate' => $completionRate,
+            ];
+        })
+        ->sortByDesc('completion_rate')
+        ->take(5)
+        ->values()
+        ->all();
+    }
+
+    /**
      * Obtenir les statistiques de tâches par priorité
      *
      * @return array
@@ -273,7 +362,7 @@ class StatisticsService
             'tasks_by_day' => $this->getTasksByDayOfWeek(),
             'tasks_by_month' => $this->getTasksByMonth(),
             'milestone_stats' => $this->getMilestoneStats(),
-            'users_stats' => $this->getTasksByUser(),
+            'users_stats_top_5' => $this->getTasksByUserTop5(),
         ];
     }
 }

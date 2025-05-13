@@ -152,6 +152,14 @@ The custom `DatabaseRefresh` trait is used to manage test databases, particularl
 | `test_middleware_allows_main_admin_access` | Tests that main admin can access protected routes | Main admin (username=tenant_id) can access protected routes   |
 | `test_middleware_redirects_non_main_admin` | Tests that non-main admins are redirected         | Non-main admins are redirected with appropriate error message |
 
+#### AdminOnlyMiddleware Tests (`tests/Feature/Middleware/AdminOnlyMiddlewareTest.php`)
+
+| Test Case                                       | Description                                              | Assertions                                                       |
+| ----------------------------------------------- | -------------------------------------------------------- | ---------------------------------------------------------------- |
+| `admin_can_access_admin_routes`                 | Tests that admin users can access admin-only routes      | Admin users can access admin routes successfully                 |
+| `regular_users_cannot_access_admin_routes`      | Tests that regular users cannot access admin-only routes | Regular users are redirected with appropriate error message      |
+| `unauthenticated_users_can_access_admin_routes` | Tests how middleware handles unauthenticated users       | Middleware allows unauthenticated users to proceed to auth check |
+
 ### Controller Tests
 
 #### Tenant Controller Tests (`tests/Feature/Web/TenantControllerTest.php`)
@@ -198,6 +206,14 @@ The custom `DatabaseRefresh` trait is used to manage test databases, particularl
 | `regular_users_cannot_get_single_milestone`                    | Tests that regular users are forbidden from retrieving a milestone | Returns 403 status                                                            |
 | `admin_can_get_favorite_milestones`                            | Tests that admin users can filter milestones by 'favorite' status  | Returns 200 status with a list of favorite milestones (or empty list)         |
 | `regular_users_cannot_get_favorite_milestones`                 | Tests that regular users are forbidden from filtering milestones   | Returns 403 status                                                            |
+
+#### FCM Controller Tests (`tests/Feature/Api/FcmControllerTest.php`)
+
+| Test Case                                   | Description                                              | Assertions                                                   |
+| ------------------------------------------- | -------------------------------------------------------- | ------------------------------------------------------------ |
+| `update_device_token`                       | Tests updating FCM device token for a user               | Returns 200 status, token is updated in database             |
+| `update_device_token_validation`            | Tests validation of FCM token when updating              | Returns 422 status with validation errors when token missing |
+| `unauthenticated_users_cannot_update_token` | Tests that only authenticated users can update FCM token | Returns 401 status for unauthenticated access                |
 
 ### Page Load Tests (Pest) (`tests/Feature/PageLoadTest.php`)
 
@@ -248,6 +264,35 @@ The custom `DatabaseRefresh` trait is used to manage test databases, particularl
 | `test_contact_form_validates_max_phone_length`   | Tests maximum phone length validation       | Phone numbers that are too long are rejected   |
 | `test_contact_form_allows_null_phone`            | Tests that phone field is optional          | Form submits successfully without phone number |
 | `test_contact_form_validates_max_message_length` | Tests maximum message length validation     | Messages that are too long are rejected        |
+
+### Task Policy Tests (`tests/Unit/TaskPolicyTest.php`)
+
+| Test Case                            | Description                                        | Assertions                                         |
+| ------------------------------------ | -------------------------------------------------- | -------------------------------------------------- |
+| `any_user_can_view_any_tasks`        | Tests that any user can view task listings         | Both admin and regular users can view tasks        |
+| `any_user_can_view_task`             | Tests that any user can view a specific task       | Any user can view any task regardless of ownership |
+| `only_admin_can_create_task`         | Tests that only admin users can create tasks       | Admin can create tasks, regular users cannot       |
+| `admin_can_update_any_task`          | Tests that admin users can update any task         | Admin users can update any task                    |
+| `regular_users_can_update_own_tasks` | Tests that regular users can only update own tasks | User can update own tasks but not others' tasks    |
+| `only_admin_can_delete_task`         | Tests that only admin users can delete tasks       | Admin can delete tasks, regular users cannot       |
+
+### FCM Service Tests (`tests/Unit/FcmServiceTest.php`)
+
+| Test Case                                  | Description                                           | Assertions                                      |
+| ------------------------------------------ | ----------------------------------------------------- | ----------------------------------------------- |
+| `sending_notification_fails_without_token` | Tests FCM notification failure when user has no token | Method returns false when user has no FCM token |
+| `successful_notification_returns_true`     | Tests successful FCM notification                     | Method returns true for successful notification |
+
+### Tenant Service Tests (`tests/Unit/TenantServiceTest.php`)
+
+| Test Case                       | Description                              | Assertions                                         |
+| ------------------------------- | ---------------------------------------- | -------------------------------------------------- |
+| `get_tenant_by_id`              | Tests retrieving a tenant by ID          | Correct tenant is retrieved with proper attributes |
+| `get_nonexistent_tenant`        | Tests retrieving a non-existent tenant   | Null is returned for non-existent tenant ID        |
+| `activate_tenant`               | Tests activating an inactive tenant      | Tenant status changes to 'active'                  |
+| `activate_nonexistent_tenant`   | Tests activating a non-existent tenant   | Null is returned for non-existent tenant ID        |
+| `deactivate_tenant`             | Tests deactivating an active tenant      | Tenant status changes to 'inactive'                |
+| `deactivate_nonexistent_tenant` | Tests deactivating a non-existent tenant | Null is returned for non-existent tenant ID        |
 
 ## Browser Tests
 

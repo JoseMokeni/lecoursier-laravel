@@ -8,6 +8,7 @@ use App\Http\Controllers\Auth\LoginController;
 use App\Http\Controllers\Web\DashboardController;
 use App\Http\Controllers\Web\UserController;
 use App\Http\Controllers\Web\TenantController;
+use App\Http\Controllers\Web\StatisticsController;
 use App\Http\Controllers\ErrorController;
 use Illuminate\Support\Facades\Auth;
 
@@ -91,6 +92,11 @@ foreach (config('tenancy.central_domains') as $domain) {
         Route::get('/dashboard', [DashboardController::class, 'index'])
             ->middleware(['web.tenant.subscribed'])
             ->name('dashboard');
+
+        // Statistics routes
+        Route::get('/statistics', [StatisticsController::class, 'index'])
+            ->middleware(['web.active.tenant', 'web.tenant.subscribed'])
+            ->name('statistics');
 
         // User management routes
         Route::get('/users', [UserController::class, 'index'])

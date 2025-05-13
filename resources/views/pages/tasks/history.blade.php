@@ -26,6 +26,10 @@
                                 class="border-transparent text-gray-500 hover:border-gray-300 hover:text-gray-700 inline-flex items-center px-1 pt-1 border-b-2 text-sm font-medium">
                                 Utilisateurs
                             </a>
+                            <a href="/statistics"
+                                class="border-transparent text-gray-500 hover:border-gray-300 hover:text-gray-700 inline-flex items-center px-1 pt-1 border-b-2 text-sm font-medium">
+                                Statistiques
+                            </a>
                             <a href="/tasks/history"
                                 class="border-blue-500 text-gray-900 inline-flex items-center px-1 pt-1 border-b-2 text-sm font-medium">
                                 Historique des tâches
@@ -209,8 +213,8 @@
                                                 Toutes</option>
                                             <option value="high"
                                                 {{ request()->priority == 'high' ? 'selected' : '' }}>Haute</option>
-                                            <option value="normal"
-                                                {{ request()->priority == 'normal' ? 'selected' : '' }}>Normale
+                                            <option value="medium"
+                                                {{ request()->priority == 'medium' ? 'selected' : '' }}>Moyenne
                                             </option>
                                             <option value="low"
                                                 {{ request()->priority == 'low' ? 'selected' : '' }}>Basse</option>
@@ -268,6 +272,9 @@
                                         Date prévue</th>
                                     <th
                                         class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                        Durée</th>
+                                    <th
+                                        class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                                         Créé le</th>
                                 </tr>
                             </thead>
@@ -300,7 +307,7 @@
                                                 : ($task->priority == 'normal'
                                                     ? 'bg-blue-100 text-blue-800'
                                                     : 'bg-gray-100 text-gray-800') }}">
-                                                {{ $task->priority == 'high' ? 'Haute' : ($task->priority == 'normal' ? 'Normale' : 'Basse') }}
+                                                {{ $task->priority == 'high' ? 'Haute' : ($task->priority == 'medium' ? 'Moyenne' : 'Basse') }}
                                             </span>
                                         </td>
                                         <td class="px-6 py-4 whitespace-nowrap hidden md:table-cell">
@@ -310,6 +317,27 @@
                                         <td
                                             class="px-6 py-4 whitespace-nowrap text-sm text-gray-500 hidden lg:table-cell">
                                             {{ $task->due_date ? $task->due_date->format('d/m/Y') : 'N/A' }}
+                                        </td>
+                                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                                            @if ($task->status == 'completed' && $task->completed_at && $task->created_at)
+                                                @php
+                                                    $seconds = $task->created_at->diffInSeconds($task->completed_at);
+                                                    $days = floor($seconds / 86400);
+                                                    $hours = floor(($seconds % 86400) / 3600);
+                                                    $minutes = floor(($seconds % 3600) / 60);
+                                                    $secs = $seconds % 60;
+                                                @endphp
+                                                @if ($days > 0)
+                                                    {{ $days }} j {{ $hours }} h {{ $minutes }} m
+                                                    {{ $secs }} s
+                                                @elseif($hours > 0)
+                                                    {{ $hours }} h {{ $minutes }} m {{ $secs }} s
+                                                @else
+                                                    {{ $minutes }} m {{ $secs }} s
+                                                @endif
+                                            @else
+                                                -
+                                            @endif
                                         </td>
                                         <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
                                             {{ $task->created_at->format('d/m/Y H:i') }}

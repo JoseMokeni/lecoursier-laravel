@@ -162,5 +162,10 @@ foreach (config('tenancy.central_domains') as $domain) {
         Route::get('/billing/portal', function (Request $request) {
             return tenancy()->tenant->redirectToBillingPortal(route('billing'));
         })->middleware(['main.admin.only'])->name('billing.portal');
+
+        // Task history view
+        Route::get('/tasks/history', [\App\Http\Controllers\Web\TaskController::class, 'history'])
+            ->middleware(['web.active.tenant', 'web.tenant.subscribed'])
+            ->name('tasks.history');
     });
 }

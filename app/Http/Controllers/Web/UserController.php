@@ -22,11 +22,30 @@ class UserController extends Controller
     }
 
     /**
-     * Display a listing of users
+     * Display a listing of users with server-side filtering and pagination
      */
-    public function index()
+    public function index(Request $request)
     {
-        $users = $this->userService->getUsers();
+        $query = \App\Models\User::query();
+
+        // Apply filters if they exist in the request
+        if ($request->filled('role') && in_array($request->role, ['admin', 'user'])) {
+            $query->where('role', $request->role);
+        }
+        if ($request->filled('status') && in_array($request->status, ['active', 'inactive'])) {
+            $query->where('status', $request->status);
+        }
+        if ($request->filled('search')) {
+            $search = $request->search;
+            $query->where(function($q) use ($search) {
+                $q->where('name', 'like', "%{$search}%")
+                  ->orWhere('username', 'like', "%{$search}%")
+                  ->orWhere('email', 'like', "%{$search}%");
+            });
+        }
+
+        $users = $query->orderBy('created_at', 'desc')->paginate(10)->withQueryString();
+
         return view('pages.users.index', ['users' => $users]);
     }
 

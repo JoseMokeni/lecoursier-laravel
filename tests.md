@@ -13,6 +13,8 @@ This document provides a comprehensive overview of the test suite for the Le Cou
     -   Controller Tests
     -   API Controller Tests
     -   Page Load Tests (Pest)
+    -   Task History Controller Tests
+    -   Dashboard Controller Tests
 -   Unit Tests
     -   Contact Form Tests
 -   Browser Tests
@@ -150,6 +152,14 @@ The custom `DatabaseRefresh` trait is used to manage test databases, particularl
 | `test_middleware_allows_main_admin_access` | Tests that main admin can access protected routes | Main admin (username=tenant_id) can access protected routes   |
 | `test_middleware_redirects_non_main_admin` | Tests that non-main admins are redirected         | Non-main admins are redirected with appropriate error message |
 
+#### AdminOnlyMiddleware Tests (`tests/Feature/Middleware/AdminOnlyMiddlewareTest.php`)
+
+| Test Case                                       | Description                                              | Assertions                                                       |
+| ----------------------------------------------- | -------------------------------------------------------- | ---------------------------------------------------------------- |
+| `admin_can_access_admin_routes`                 | Tests that admin users can access admin-only routes      | Admin users can access admin routes successfully                 |
+| `regular_users_cannot_access_admin_routes`      | Tests that regular users cannot access admin-only routes | Regular users are redirected with appropriate error message      |
+| `unauthenticated_users_can_access_admin_routes` | Tests how middleware handles unauthenticated users       | Middleware allows unauthenticated users to proceed to auth check |
+
 ### Controller Tests
 
 #### Tenant Controller Tests (`tests/Feature/Web/TenantControllerTest.php`)
@@ -197,6 +207,14 @@ The custom `DatabaseRefresh` trait is used to manage test databases, particularl
 | `admin_can_get_favorite_milestones`                            | Tests that admin users can filter milestones by 'favorite' status  | Returns 200 status with a list of favorite milestones (or empty list)         |
 | `regular_users_cannot_get_favorite_milestones`                 | Tests that regular users are forbidden from filtering milestones   | Returns 403 status                                                            |
 
+#### FCM Controller Tests (`tests/Feature/Api/FcmControllerTest.php`)
+
+| Test Case                                   | Description                                              | Assertions                                                   |
+| ------------------------------------------- | -------------------------------------------------------- | ------------------------------------------------------------ |
+| `update_device_token`                       | Tests updating FCM device token for a user               | Returns 200 status, token is updated in database             |
+| `update_device_token_validation`            | Tests validation of FCM token when updating              | Returns 422 status with validation errors when token missing |
+| `unauthenticated_users_cannot_update_token` | Tests that only authenticated users can update FCM token | Returns 401 status for unauthenticated access                |
+
 ### Page Load Tests (Pest) (`tests/Feature/PageLoadTest.php`)
 
 | Test Case                              | Description                                | Assertions                                  |
@@ -207,6 +225,25 @@ The custom `DatabaseRefresh` trait is used to manage test databases, particularl
 | `loads the register page`              | Tests the registration page loads          | Page loads with status 200 and correct view |
 | `loads the tenant inactive error page` | Tests the tenant inactive error page loads | Page loads with status 200 and correct view |
 | `loads the tenant required error page` | Tests the tenant required error page loads | Page loads with status 200 and correct view |
+
+### Task History Controller Tests (`tests/Feature/Web/TaskHistoryControllerTest.php`)
+
+| Test Case                                       | Description                                        | Assertions                                      |
+| ----------------------------------------------- | -------------------------------------------------- | ----------------------------------------------- |
+| `test_history_displays_tasks`                   | Verifies the history page displays a list of tasks | Page loads, correct view, tasks present         |
+| `test_history_filters_by_status`                | Filters tasks by status (e.g., completed)          | All returned tasks have the requested status    |
+| `test_history_filters_by_priority`              | Filters tasks by priority (e.g., high)             | All returned tasks have the requested priority  |
+| `test_history_searches_by_name_and_description` | Searches tasks by name or description              | Returned tasks match the search query           |
+| `test_history_filters_by_date_today`            | Filters tasks created today                        | All returned tasks have today's date            |
+| `test_history_filters_by_date_week`             | Filters tasks created this week                    | All returned tasks are within the current week  |
+| `test_history_filters_by_date_month`            | Filters tasks created this month                   | All returned tasks are within the current month |
+| `test_history_pagination`                       | Ensures pagination works (max 10 per page)         | Returned tasks count is <= 10                   |
+
+### Dashboard Controller Tests (`tests/Feature/Web/DashboardControllerTest.php`)
+
+| Test Case                                 | Description                                      | Assertions                                 |
+| ----------------------------------------- | ------------------------------------------------ | ------------------------------------------ |
+| `test_dashboard_displays_task_statistics` | Verifies dashboard shows correct task statistics | View loads, statistics match created tasks |
 
 ## Unit Tests
 
@@ -227,6 +264,35 @@ The custom `DatabaseRefresh` trait is used to manage test databases, particularl
 | `test_contact_form_validates_max_phone_length`   | Tests maximum phone length validation       | Phone numbers that are too long are rejected   |
 | `test_contact_form_allows_null_phone`            | Tests that phone field is optional          | Form submits successfully without phone number |
 | `test_contact_form_validates_max_message_length` | Tests maximum message length validation     | Messages that are too long are rejected        |
+
+### Task Policy Tests (`tests/Unit/TaskPolicyTest.php`)
+
+| Test Case                            | Description                                        | Assertions                                         |
+| ------------------------------------ | -------------------------------------------------- | -------------------------------------------------- |
+| `any_user_can_view_any_tasks`        | Tests that any user can view task listings         | Both admin and regular users can view tasks        |
+| `any_user_can_view_task`             | Tests that any user can view a specific task       | Any user can view any task regardless of ownership |
+| `only_admin_can_create_task`         | Tests that only admin users can create tasks       | Admin can create tasks, regular users cannot       |
+| `admin_can_update_any_task`          | Tests that admin users can update any task         | Admin users can update any task                    |
+| `regular_users_can_update_own_tasks` | Tests that regular users can only update own tasks | User can update own tasks but not others' tasks    |
+| `only_admin_can_delete_task`         | Tests that only admin users can delete tasks       | Admin can delete tasks, regular users cannot       |
+
+### FCM Service Tests (`tests/Unit/FcmServiceTest.php`)
+
+| Test Case                                  | Description                                           | Assertions                                      |
+| ------------------------------------------ | ----------------------------------------------------- | ----------------------------------------------- |
+| `sending_notification_fails_without_token` | Tests FCM notification failure when user has no token | Method returns false when user has no FCM token |
+| `successful_notification_returns_true`     | Tests successful FCM notification                     | Method returns true for successful notification |
+
+### Tenant Service Tests (`tests/Unit/TenantServiceTest.php`)
+
+| Test Case                       | Description                              | Assertions                                         |
+| ------------------------------- | ---------------------------------------- | -------------------------------------------------- |
+| `get_tenant_by_id`              | Tests retrieving a tenant by ID          | Correct tenant is retrieved with proper attributes |
+| `get_nonexistent_tenant`        | Tests retrieving a non-existent tenant   | Null is returned for non-existent tenant ID        |
+| `activate_tenant`               | Tests activating an inactive tenant      | Tenant status changes to 'active'                  |
+| `activate_nonexistent_tenant`   | Tests activating a non-existent tenant   | Null is returned for non-existent tenant ID        |
+| `deactivate_tenant`             | Tests deactivating an active tenant      | Tenant status changes to 'inactive'                |
+| `deactivate_nonexistent_tenant` | Tests deactivating a non-existent tenant | Null is returned for non-existent tenant ID        |
 
 ## Browser Tests
 

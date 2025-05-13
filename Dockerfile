@@ -14,6 +14,9 @@ RUN apt-get update && apt-get install -y \
     libxml2-dev \
     libpq-dev
 
+# Install Supervisor
+RUN apt-get update && apt-get install -y supervisor
+
 # Clear cache
 RUN apt-get clean && rm -rf /var/lib/apt/lists/*
 
@@ -55,6 +58,18 @@ COPY ./docker/php/xdebug.ini /usr/local/etc/php/conf.d/xdebug.ini
 COPY . /var/www/html
 RUN chown -R service:service /var/www/html
 
+# Ensure Supervisor log directory exists and is writable by 'service'
+RUN mkdir -p /var/log/supervisor && chown -R service:service /var/log/supervisor
+
+# Ensure /var/run is writable by 'service' for Supervisor pidfile and Apache
+RUN mkdir -p /var/run && chown -R service:service /var/run
+
+# Copy Supervisor config for Laravel queue worker
+COPY ./docker/supervisor/laravel-worker.conf /etc/supervisor/conf.d/laravel-worker.conf
+
+# Copy custom supervisord.conf to disable HTTP server
+COPY ./docker/supervisor/supervisord.conf /etc/supervisor/supervisord.conf
+
 # Configure Apache to listen on port 8080 instead of 80
 RUN sed -i 's/Listen 80/Listen 8080/g' /etc/apache2/ports.conf
 
@@ -68,5 +83,5 @@ RUN composer dump-autoload
 # Expose port 8080
 EXPOSE 8080
 
-# Start Apache in the foreground
-CMD ["apache2-foreground"]
+# Start Supervisor (which will manage Apache and the queue worker)
+CMD ["/usr/bin/supervisord", "-n", "-c", "/etc/supervisor/supervisord.conf"]

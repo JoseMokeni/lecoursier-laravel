@@ -1,5 +1,6 @@
 <?php
 
+use App\Http\Controllers\Api\FcmController;
 use App\Http\Controllers\Api\MilestoneController;
 use App\Http\Controllers\Api\TaskController;
 use Illuminate\Http\Request;
@@ -51,6 +52,10 @@ Route::middleware(['api.tenant.context', 'api.active.tenant', 'api.tenant.subscr
                 return \App\Http\Resources\UserResource::collection(\App\Models\User::where('role', 'user')->get());
             });
         });
+
+        // FCM routes
+        Route::put('update-device-token', [FcmController::class, 'updateDeviceToken'])
+            ->middleware('api.auth');
 
         // Milestone routes
         Route::apiResource('milestones', MilestoneController::class)

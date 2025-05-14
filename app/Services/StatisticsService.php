@@ -10,6 +10,49 @@ use Illuminate\Support\Facades\DB;
 
 class StatisticsService
 {
+    protected $startDate = null;
+    protected $endDate = null;
+
+    /**
+     * Set date range for filtering statistics
+     *
+     * @param string|null $startDate
+     * @param string|null $endDate
+     * @return $this
+     */
+    public function setDateRange($startDate = null, $endDate = null)
+    {
+        if ($startDate) {
+            $this->startDate = Carbon::parse($startDate)->startOfDay();
+        }
+
+        if ($endDate) {
+            $this->endDate = Carbon::parse($endDate)->endOfDay();
+        }
+
+        return $this;
+    }
+
+    /**
+     * Apply date filters to query
+     *
+     * @param \Illuminate\Database\Eloquent\Builder $query
+     * @param string $dateField
+     * @return \Illuminate\Database\Eloquent\Builder
+     */
+    protected function applyDateFilters($query, $dateField = 'created_at')
+    {
+        if ($this->startDate) {
+            $query->where($dateField, '>=', $this->startDate);
+        }
+
+        if ($this->endDate) {
+            $query->where($dateField, '<=', $this->endDate);
+        }
+
+        return $query;
+    }
+
     /**
      * Obtenir les statistiques globales des tâches
      *
@@ -17,12 +60,20 @@ class StatisticsService
      */
     public function getTaskStats()
     {
+        $baseQuery = Task::query();
+        $this->applyDateFilters($baseQuery);
+
+        $pendingQuery = clone $baseQuery;
+        $inProgressQuery = clone $baseQuery;
+        $completedQuery = clone $baseQuery;
+        $canceledQuery = clone $baseQuery;
+
         return [
-            'total' => Task::count(),
-            'pending' => Task::where('status', 'pending')->count(),
-            'in_progress' => Task::where('status', 'in_progress')->count(),
-            'completed' => Task::where('status', 'completed')->count(),
-            'canceled' => Task::where('status', 'canceled')->count(),
+            'total' => $baseQuery->count(),
+            'pending' => $pendingQuery->where('status', 'pending')->count(),
+            'in_progress' => $inProgressQuery->where('status', 'in_progress')->count(),
+            'completed' => $completedQuery->where('status', 'completed')->count(),
+            'canceled' => $canceledQuery->where('status', 'canceled')->count(),
             'completion_rate' => $this->calculateCompletionRate(),
         ];
     }
@@ -34,12 +85,18 @@ class StatisticsService
      */
     private function calculateCompletionRate()
     {
-        $total = Task::count();
+        $baseQuery = Task::query();
+        $this->applyDateFilters($baseQuery);
+        $total = $baseQuery->count();
+
         if ($total === 0) {
             return 0;
         }
 
-        $completed = Task::where('status', 'completed')->count();
+        $completedQuery = Task::query()->where('status', 'completed');
+        $this->applyDateFilters($completedQuery);
+        $completed = $completedQuery->count();
+
         return round(($completed / $total) * 100, 2);
     }
 
@@ -52,8 +109,10 @@ class StatisticsService
     {
         $completedTasks = Task::where('status', 'completed')
             ->whereNotNull('completed_at')
-            ->whereNotNull('created_at')
-            ->get();
+            ->whereNotNull('created_at');
+
+        $this->applyDateFilters($completedTasks, 'completed_at');
+        $completedTasks = $completedTasks->get();
 
         if ($completedTasks->isEmpty()) {
             return [
@@ -95,15 +154,20 @@ class StatisticsService
     {
         $users = User::where('role', '!=', 'admin')
         ->withCount([
-            'tasks as total_tasks',
+            'tasks as total_tasks' => function ($query) {
+                $this->applyDateFilters($query);
+            },
             'tasks as completed_tasks' => function ($query) {
                 $query->where('status', 'completed');
+                $this->applyDateFilters($query);
             },
             'tasks as pending_tasks' => function ($query) {
                 $query->where('status', 'pending');
+                $this->applyDateFilters($query);
             },
             'tasks as in_progress_tasks' => function ($query) {
                 $query->where('status', 'in_progress');
+                $this->applyDateFilters($query);
             }
         ])->get();
 
@@ -137,15 +201,20 @@ class StatisticsService
     {
         $users = User::where('role', '!=', 'admin')
             ->withCount([
-                'tasks as total_tasks',
+                'tasks as total_tasks' => function ($query) {
+                    $this->applyDateFilters($query);
+                },
                 'tasks as completed_tasks' => function ($query) {
                     $query->where('status', 'completed');
+                    $this->applyDateFilters($query);
                 },
                 'tasks as pending_tasks' => function ($query) {
                     $query->where('status', 'pending');
+                    $this->applyDateFilters($query);
                 },
                 'tasks as in_progress_tasks' => function ($query) {
                     $query->where('status', 'in_progress');
+                    $this->applyDateFilters($query);
                 }
             ])
             ->paginate($perPage, ['*'], 'page', $page);
@@ -180,15 +249,20 @@ class StatisticsService
     {
         $users = User::where('role', '!=', 'admin')
         ->withCount([
-            'tasks as total_tasks',
+            'tasks as total_tasks' => function ($query) {
+                $this->applyDateFilters($query);
+            },
             'tasks as completed_tasks' => function ($query) {
                 $query->where('status', 'completed');
+                $this->applyDateFilters($query);
             },
             'tasks as pending_tasks' => function ($query) {
                 $query->where('status', 'pending');
+                $this->applyDateFilters($query);
             },
             'tasks as in_progress_tasks' => function ($query) {
                 $query->where('status', 'in_progress');
+                $this->applyDateFilters($query);
             }
         ])->get();
 
@@ -226,7 +300,9 @@ class StatisticsService
         $result = [];
 
         foreach ($priorities as $priority) {
-            $result[$priority] = Task::where('priority', $priority)->count();
+            $query = Task::where('priority', $priority);
+            $this->applyDateFilters($query);
+            $result[$priority] = $query->count();
         }
 
         return $result;
@@ -246,8 +322,9 @@ class StatisticsService
 
         // PostgreSQL utilise EXTRACT(DOW) plutôt que DAYOFWEEK
         // DOW: 0 (dimanche) à 6 (samedi)
-        $stats = Task::select(DB::raw('EXTRACT(DOW FROM created_at) as day'), DB::raw('count(*) as count'))
-            ->groupBy('day')
+        $stats = Task::select(DB::raw('EXTRACT(DOW FROM created_at) as day'), DB::raw('count(*) as count'));
+        $this->applyDateFilters($stats);
+        $stats = $stats->groupBy('day')
             ->get()
             ->keyBy(function ($item) {
                 // Convertir le format PostgreSQL (0=dimanche, 6=samedi)
@@ -281,14 +358,17 @@ class StatisticsService
             $month = $now->copy()->subMonths($i);
             $monthName = $month->translatedFormat('F Y');
 
+            $createdQuery = Task::whereYear('created_at', $month->year)
+                ->whereMonth('created_at', $month->month);
+            $this->applyDateFilters($createdQuery);
+            $completedQuery = Task::whereYear('completed_at', $month->year)
+                ->whereMonth('completed_at', $month->month)
+                ->where('status', 'completed');
+            $this->applyDateFilters($completedQuery);
+
             $result[$monthName] = [
-                'created' => Task::whereYear('created_at', $month->year)
-                    ->whereMonth('created_at', $month->month)
-                    ->count(),
-                'completed' => Task::whereYear('completed_at', $month->year)
-                    ->whereMonth('completed_at', $month->month)
-                    ->where('status', 'completed')
-                    ->count(),
+                'created' => $createdQuery->count(),
+                'completed' => $completedQuery->count(),
             ];
         }
 
@@ -302,6 +382,12 @@ class StatisticsService
      */
     public function getMilestoneStats()
     {
+        // For milestone stats, we don't apply date filtering directly to the milestones
+        // but rather to the tasks associated with those milestones
+        $milestonesWithTasks = Milestone::withCount(['tasks' => function ($query) {
+            $this->applyDateFilters($query);
+        }])->get();
+
         return [
             'total' => Milestone::count(),
             'favorites' => Milestone::where('favorite', true)->count(),
@@ -322,7 +408,10 @@ class StatisticsService
             return 0;
         }
 
-        $taskCount = Task::count();
+        $taskQuery = Task::query();
+        $this->applyDateFilters($taskQuery);
+        $taskCount = $taskQuery->count();
+
         return round($taskCount / $milestoneCount, 2);
     }
 
@@ -333,7 +422,9 @@ class StatisticsService
      */
     private function getMostUsedMilestone()
     {
-        $milestone = Milestone::withCount('tasks')
+        $milestone = Milestone::withCount(['tasks' => function ($query) {
+            $this->applyDateFilters($query);
+        }])
             ->orderBy('tasks_count', 'desc')
             ->first();
 
@@ -346,6 +437,48 @@ class StatisticsService
             'name' => $milestone->name,
             'tasks_count' => $milestone->tasks_count,
         ];
+    }
+
+    /**
+     * Obtenir l'information sur le filtre de date actuel
+     *
+     * @return array
+     */
+    public function getCurrentFilterInfo()
+    {
+        if (!$this->startDate && !$this->endDate) {
+            return [
+                'is_filtered' => false,
+                'description' => 'Toutes les périodes',
+            ];
+        }
+
+        $startDateStr = $this->startDate ? $this->startDate->format('d/m/Y') : '';
+        $endDateStr = $this->endDate ? $this->endDate->format('d/m/Y') : '';
+
+        if ($this->startDate && $this->endDate) {
+            if ($this->startDate->isSameDay($this->endDate)) {
+                return [
+                    'is_filtered' => true,
+                    'description' => 'Pour le ' . $startDateStr,
+                ];
+            } else {
+                return [
+                    'is_filtered' => true,
+                    'description' => 'Du ' . $startDateStr . ' au ' . $endDateStr,
+                ];
+            }
+        } elseif ($this->startDate) {
+            return [
+                'is_filtered' => true,
+                'description' => 'À partir du ' . $startDateStr,
+            ];
+        } else {
+            return [
+                'is_filtered' => true,
+                'description' => 'Jusqu\'au ' . $endDateStr,
+            ];
+        }
     }
 
     /**

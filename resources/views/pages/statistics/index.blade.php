@@ -135,6 +135,84 @@
                 <p class="mt-1 text-sm text-gray-600">Visualisez les performances de vos coursiers</p>
             </div>
 
+            <!-- Date Filter Form -->
+            <div class="bg-white shadow rounded-lg mb-8 p-4">
+                <h2 class="text-lg font-medium text-gray-900 mb-4">Filtrer par date</h2>
+                <form action="{{ route('statistics.index') }}" method="GET" class="space-y-4">
+                    <div class="grid grid-cols-1 md:grid-cols-4 gap-4">
+                        <div class="col-span-2 md:col-span-1">
+                            <label for="filter_type" class="block text-sm font-medium text-gray-700 mb-1">Type de
+                                filtre</label>
+                            <select id="filter_type" name="filter_type" onchange="toggleCustomDateInputs()"
+                                class="mt-1 block w-full pl-3 pr-10 py-2 text-base border-gray-300 focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm rounded-md">
+                                <option value="all" {{ $filterType == 'all' ? 'selected' : '' }}>Toutes les périodes
+                                </option>
+                                <option value="today" {{ $filterType == 'today' ? 'selected' : '' }}>Aujourd'hui
+                                </option>
+                                <option value="yesterday" {{ $filterType == 'yesterday' ? 'selected' : '' }}>Hier
+                                </option>
+                                <option value="this_week" {{ $filterType == 'this_week' ? 'selected' : '' }}>Cette
+                                    semaine</option>
+                                <option value="last_week" {{ $filterType == 'last_week' ? 'selected' : '' }}>Semaine
+                                    dernière</option>
+                                <option value="this_month" {{ $filterType == 'this_month' ? 'selected' : '' }}>Ce
+                                    mois-ci</option>
+                                <option value="last_month" {{ $filterType == 'last_month' ? 'selected' : '' }}>Mois
+                                    dernier</option>
+                                <option value="this_year" {{ $filterType == 'this_year' ? 'selected' : '' }}>Cette
+                                    année</option>
+                                <option value="last_year" {{ $filterType == 'last_year' ? 'selected' : '' }}>Année
+                                    dernière</option>
+                                <option value="custom" {{ $filterType == 'custom' ? 'selected' : '' }}>Personnalisé
+                                </option>
+                            </select>
+                        </div>
+
+                        <div id="start_date_container" class="col-span-2 md:col-span-1"
+                            style="{{ $filterType !== 'custom' ? 'display: none;' : '' }}">
+                            <label for="start_date" class="block text-sm font-medium text-gray-700 mb-1">Date de
+                                début</label>
+                            <input type="date" name="start_date" id="start_date" value="{{ $startDate ?? '' }}"
+                                class="mt-1 focus:ring-blue-500 focus:border-blue-500 block w-full shadow-sm sm:text-sm border-gray-300 rounded-md">
+                        </div>
+
+                        <div id="end_date_container" class="col-span-2 md:col-span-1"
+                            style="{{ $filterType !== 'custom' ? 'display: none;' : '' }}">
+                            <label for="end_date" class="block text-sm font-medium text-gray-700 mb-1">Date de
+                                fin</label>
+                            <input type="date" name="end_date" id="end_date" value="{{ $endDate ?? '' }}"
+                                class="mt-1 focus:ring-blue-500 focus:border-blue-500 block w-full shadow-sm sm:text-sm border-gray-300 rounded-md">
+                        </div>
+
+                        <div class="col-span-2 md:col-span-1 flex items-end">
+                            <button type="submit"
+                                class="w-full inline-flex justify-center py-2 px-4 border border-transparent shadow-sm text-sm font-medium rounded-md text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500">
+                                Filtrer
+                            </button>
+                        </div>
+                    </div>
+                </form>
+            </div>
+
+            @if (isset($filterInfo) && $filterInfo['is_filtered'])
+                <div class="bg-blue-50 border-l-4 border-blue-400 p-4 mb-8 rounded-md">
+                    <div class="flex items-center">
+                        <div class="flex-shrink-0">
+                            <svg class="h-5 w-5 text-blue-400" viewBox="0 0 20 20" fill="currentColor">
+                                <path fill-rule="evenodd"
+                                    d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z"
+                                    clip-rule="evenodd" />
+                            </svg>
+                        </div>
+                        <div class="ml-3">
+                            <p class="text-sm text-blue-700">
+                                <span class="font-medium">Filtrage actif:</span> {{ $filterInfo['description'] }}
+                            </p>
+                        </div>
+                    </div>
+                </div>
+            @endif
+
             <!-- Statistics Grid -->
             <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
                 <div class="bg-white overflow-hidden shadow rounded-lg">
@@ -579,6 +657,24 @@
                     }
                 }
             });
+
+            // Function to toggle custom date inputs
+            function toggleCustomDateInputs() {
+                const filterType = document.getElementById('filter_type').value;
+                const startDateContainer = document.getElementById('start_date_container');
+                const endDateContainer = document.getElementById('end_date_container');
+
+                if (filterType === 'custom') {
+                    startDateContainer.style.display = 'block';
+                    endDateContainer.style.display = 'block';
+                } else {
+                    startDateContainer.style.display = 'none';
+                    endDateContainer.style.display = 'none';
+                }
+            }
+
+            // Initialize custom date inputs visibility
+            toggleCustomDateInputs();
         });
     </script>
 </body>

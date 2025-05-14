@@ -68,7 +68,9 @@
         <div class="content">
             <p>Bonjour {{ $userData['name'] }},</p>
 
-            <p>Votre mot de passe a été mis à jour avec succès sur la plateforme Le Coursier.</p>
+            <p>Votre mot de passe a été mis à jour avec succès sur la plateforme Le Coursier. Pour des raisons de
+                sécurité, nous vous recommandons de <a href="{{ url('/change-password') }}">définir votre propre mot de
+                    passe personnalisé</a>.</p>
 
             @if ($newPassword)
                 <div class="credentials">
@@ -77,10 +79,15 @@
                     <p><strong>Nouveau mot de passe:</strong> {{ $newPassword }}</p>
                 </div>
 
-                <p>Veuillez conserver ces informations en lieu sûr.</p>
+                <p>Vous pouvez vous connecter avec votre nouveau mot de passe temporaire et le modifier ensuite dans
+                    votre espace personnel. <a href="{{ url('/change-password') }}" class="btn"
+                        style="font-size: 14px; padding: 5px 10px;">Changer mon mot de passe</a></p>
             @else
-                <p>Si vous n'avez pas demandé cette modification, veuillez contacter immédiatement l'administrateur de
-                    votre compte.</p>
+                <p>Si cette modification ne vient pas de vous, vous pouvez sécuriser votre compte en cliquant sur le
+                    bouton ci-dessous:</p>
+                <p style="text-align: center;">
+                    <a href="{{ url('/change-password') }}" class="btn">Modifier mon mot de passe</a>
+                </p>
             @endif
 
             <p>Vous pouvez vous connecter en cliquant sur le bouton ci-dessous:</p>

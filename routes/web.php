@@ -81,6 +81,10 @@ foreach (config('tenancy.central_domains') as $domain) {
         Route::get('/login', [LoginController::class, 'create'])->name('login');
         Route::post('/login', [LoginController::class, 'store']);
 
+        // Password change routes
+        Route::get('/change-password', [UserController::class, 'changePassword'])->name('password.change');
+        Route::post('/change-password', [UserController::class, 'updatePassword'])->name('password.update');
+
         // Error routes (moved outside middleware groups for direct access)
         Route::get('/errors/tenant-inactive', [ErrorController::class, 'tenantInactive'])->name('error.tenant-inactive');
         Route::get('/errors/tenant-required', [ErrorController::class, 'tenantRequired'])->name('error.tenant-required');

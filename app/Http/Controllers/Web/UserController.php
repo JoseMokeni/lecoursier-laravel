@@ -5,9 +5,12 @@ namespace App\Http\Controllers\Web;
 use App\Http\Controllers\Controller;
 use App\Mail\PasswordChangedMail;
 use App\Mail\WelcomeUserMail;
+use App\Models\Tenant;
+use App\Models\User;
 use App\Services\UserService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Mail;
 use Illuminate\Validation\Rule;
@@ -26,7 +29,7 @@ class UserController extends Controller
      */
     public function index(Request $request)
     {
-        $query = \App\Models\User::query();
+        $query = User::query();
 
         // Apply filters if they exist in the request
         if ($request->filled('role') && in_array($request->role, ['admin', 'user'])) {
@@ -271,5 +274,57 @@ class UserController extends Controller
         }
 
         return redirect('/users')->with('success', 'Utilisateur supprimé avec succès!');
+    }
+
+    /**
+     * Show the form for changing password
+     */
+    public function changePassword()
+    {
+        return view('pages.users.change-password');
+    }
+
+    /**
+     * Update the user's password
+     */
+    public function updatePassword(Request $request)
+    {
+        $request->validate([
+            'company_code' => 'required|string',
+            'username' => 'required|string',
+            'old_password' => 'required|string',
+            'password' => 'required|string|min:8|confirmed',
+        ]);
+
+        // Find the tenant by the company code
+        $tenant = Tenant::where('id', $request->company_code)->first();
+
+        if (!$tenant) {
+            return back()->withErrors(['company_code' => 'Code entreprise invalide']);
+        }
+
+        // Initialize tenancy for this tenant
+        tenancy()->initialize($tenant->id);
+
+        // Now find the user after tenancy is initialized
+        $user = User::where('username', $request->username)->first();
+
+        if (!$user) {
+            return back()->withErrors(['username' => 'Utilisateur introuvable']);
+        }
+
+        // Verify the old password directly (without authentication)
+        if (!Hash::check($request->old_password, $user->password)) {
+            return back()->withErrors(['old_password' => 'Le mot de passe actuel est incorrect']);
+        }
+
+        // Update the password
+        $user->password = bcrypt($request->password);
+        $user->save();
+
+        // exit the tenancy context
+        tenancy()->end();
+
+        return redirect()->route('login')->with('success', 'Mot de passe modifié avec succès. Veuillez vous connecter avec votre nouveau mot de passe.');
     }
 }

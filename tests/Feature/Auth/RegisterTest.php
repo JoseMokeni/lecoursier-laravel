@@ -72,7 +72,7 @@ class RegisterTest extends TestCase
         $this->assertAuthenticatedAs($user);
 
         // Assert that the welcome email was sent
-        Mail::assertSent(WelcomeUserMail::class, function ($mail) use ($user) {
+        Mail::assertQueued(WelcomeUserMail::class, function ($mail) use ($user) {
             return $mail->hasTo($user->email);
         });
     }

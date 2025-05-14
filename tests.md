@@ -17,6 +17,10 @@ This document provides a comprehensive overview of the test suite for the Le Cou
     -   Dashboard Controller Tests
 -   Unit Tests
     -   Contact Form Tests
+    -   Task Policy Tests
+    -   FCM Service Tests
+    -   Tenant Service Tests
+    -   Statistics Service Unit Tests
 -   Browser Tests
 
 ## Overview
@@ -293,6 +297,26 @@ The custom `DatabaseRefresh` trait is used to manage test databases, particularl
 | `activate_nonexistent_tenant`   | Tests activating a non-existent tenant   | Null is returned for non-existent tenant ID        |
 | `deactivate_tenant`             | Tests deactivating an active tenant      | Tenant status changes to 'inactive'                |
 | `deactivate_nonexistent_tenant` | Tests deactivating a non-existent tenant | Null is returned for non-existent tenant ID        |
+
+### Statistics Service Unit Tests (`tests/Unit/Services/StatisticsServiceTest.php`)
+
+| Test Case                                           | Description                                      | Assertions                                                   |
+| --------------------------------------------------- | ------------------------------------------------ | ------------------------------------------------------------ |
+| `test_set_date_range`                               | Tests setting a date range for statistics        | Returns chainable instance, filter info is correct           |
+| `test_get_task_stats_with_empty_data`               | Tests task stats with no tasks                   | All stats are zero                                           |
+| `test_get_task_stats_with_data`                     | Tests task stats with various statuses           | Stats match created tasks, completion rate is correct        |
+| `test_get_task_time_stats`                          | Tests task time statistics (mocked)              | Returns expected time stats                                  |
+| `test_get_current_filter_info_with_no_filters`      | Tests filter info with no date range             | is_filtered is false, description is "Toutes les périodes"   |
+| `test_get_current_filter_info_with_start_date_only` | Tests filter info with only start date           | is_filtered is true, description matches start date          |
+| `test_get_current_filter_info_with_end_date_only`   | Tests filter info with only end date             | is_filtered is true, description matches end date            |
+| `test_get_current_filter_info_with_same_day`        | Tests filter info with same start and end date   | is_filtered is true, description matches single day          |
+| `test_get_tasks_by_user_paginated`                  | Tests paginated user task stats                  | Returns correct stats for assigned user                      |
+| `test_get_all_stats`                                | Tests getting all statistics at once             | Structure contains all expected keys                         |
+| `test_get_tasks_by_priority`                        | Tests stats by task priority                     | Counts by priority match created tasks                       |
+| `test_get_milestone_stats`                          | Tests milestone statistics                       | Stats for milestones, favorites, most used, etc. are correct |
+| `test_get_tasks_by_month`                           | Tests monthly task stats                         | Returns array of 12 months, each with created/completed keys |
+| `test_get_user_stats_top_5`                         | Tests top 5 users by task stats                  | Returns up to 5 users, ordered by total tasks                |
+| `test_date_range_filters_are_applied`               | Tests that date range filters affect filter info | Filter info changes according to set date range              |
 
 ## Browser Tests
 

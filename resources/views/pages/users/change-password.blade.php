@@ -5,10 +5,10 @@
                 <h1 class="text-3xl font-bold text-blue-600">Le Coursier</h1>
             </a>
             <h2 class="mt-6 text-center text-3xl font-extrabold text-gray-900">
-                Connexion à votre espace
+                Changement de mot de passe
             </h2>
             <p class="mt-2 text-center text-sm text-gray-600">
-                Accédez à votre plateforme de gestion de livraison
+                Veuillez remplir le formulaire ci-dessous pour modifier votre mot de passe
             </p>
         </div>
 
@@ -57,20 +57,15 @@
                     </div>
                 @endif
 
-                <!-- Add the admin-only notice -->
-                <div class="bg-blue-50 border border-blue-200 text-blue-800 px-4 py-3 rounded relative" role="alert">
-                    <p class="text-sm">Seuls les administrateurs peuvent accéder à l'interface web.</p>
-                </div>
-
-                <form class="space-y-6" method="POST" action="/login">
+                <form class="space-y-6" action="{{ route('password.update') }}" method="POST">
                     @csrf
+
                     <div>
                         <label for="company_code" class="block text-sm font-medium text-gray-700">
                             Code entreprise
                         </label>
                         <div class="mt-1">
                             <input id="company_code" name="company_code" type="text" required
-                                value="{{ old('company_code') }}"
                                 class="appearance-none block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm placeholder-gray-400 focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm">
                         </div>
                     </div>
@@ -80,63 +75,63 @@
                             Nom d'utilisateur
                         </label>
                         <div class="mt-1">
-                            <input id="username" name="username" type="text" required value="{{ old('username') }}"
+                            <input id="username" name="username" type="text" required
+                                class="appearance-none block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm placeholder-gray-400 focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm">
+                        </div>
+                    </div>
+
+                    <div>
+                        <label for="old_password" class="block text-sm font-medium text-gray-700">
+                            Mot de passe actuel
+                        </label>
+                        <div class="mt-1">
+                            <input id="old_password" name="old_password" type="password" required
                                 class="appearance-none block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm placeholder-gray-400 focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm">
                         </div>
                     </div>
 
                     <div>
                         <label for="password" class="block text-sm font-medium text-gray-700">
-                            Mot de passe
+                            Nouveau mot de passe
                         </label>
                         <div class="mt-1">
                             <input id="password" name="password" type="password" required
                                 class="appearance-none block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm placeholder-gray-400 focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm">
                         </div>
+                        <p class="mt-1 text-xs text-gray-500">Minimum 8 caractères</p>
                     </div>
 
-                    <div class="flex items-center justify-between">
-                        <div class="flex items-center">
-                            <input id="remember" name="remember" type="checkbox"
-                                class="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded">
-                            <label for="remember" class="ml-2 block text-sm text-gray-900">
-                                Se souvenir de moi
-                            </label>
+                    <div>
+                        <label for="password_confirmation" class="block text-sm font-medium text-gray-700">
+                            Confirmer le nouveau mot de passe
+                        </label>
+                        <div class="mt-1">
+                            <input id="password_confirmation" name="password_confirmation" type="password" required
+                                class="appearance-none block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm placeholder-gray-400 focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm">
                         </div>
                     </div>
 
                     <div>
                         <button type="submit"
                             class="w-full flex justify-center py-2 px-4 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500">
-                            Se connecter
+                            Changer mon mot de passe
                         </button>
                     </div>
+
+                    <div class="flex items-center justify-center">
+                        <div class="text-sm">
+                            <a href="{{ route('login') }}"
+                                class="font-medium text-blue-600 hover:text-blue-500 flex items-center">
+                                <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 mr-1" fill="none"
+                                    viewBox="0 0 24 24" stroke="currentColor">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                        d="M10 19l-7-7m0 0l7-7m-7 7h18" />
+                                </svg>
+                                Retour à la page de connexion
+                            </a>
+                        </div>
+                    </div>
                 </form>
-
-                <div class="mt-6">
-                    <div class="relative">
-                        <div class="absolute inset-0 flex items-center">
-                            <div class="w-full border-t border-gray-300"></div>
-                        </div>
-                        <div class="relative flex justify-center text-sm">
-                            <span class="px-2 bg-white text-gray-500">
-                                Options supplémentaires
-                            </span>
-                        </div>
-                    </div>
-
-                    <div class="mt-6 space-y-4">
-                        <a href="{{ route('password.change') }}"
-                            class="w-full flex justify-center py-2 px-4 border border-gray-300 rounded-md shadow-sm bg-white text-sm font-medium text-gray-700 hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500">
-                            Changer de mot de passe
-                        </a>
-
-                        <a href="/register"
-                            class="w-full flex justify-center py-2 px-4 border border-gray-300 rounded-md shadow-sm bg-white text-sm font-medium text-gray-700 hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500">
-                            Créer un compte
-                        </a>
-                    </div>
-                </div>
             </div>
         </div>
     </div>

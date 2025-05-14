@@ -126,7 +126,8 @@
                                 <p>Après l'inscription, <strong>votre code entreprise</strong> sera utilisé comme nom
                                     d'utilisateur et mot de passe pour accéder à votre compte administrateur.</p>
                                 <p class="mt-1">Nous vous recommandons de changer ce mot de passe lors de votre
-                                    première connexion.</p>
+                                    première connexion ou d'utiliser le lien <a href="{{ route('password.change') }}"
+                                        class="underline font-medium">Changer votre mot de passe</a> ci-dessous.</p>
                             </div>
                         </div>
                     </div>
@@ -148,6 +149,13 @@
                         <a href="/login"
                             class="w-full flex justify-center py-2 px-4 border border-gray-300 rounded-md shadow-sm bg-white text-sm font-medium text-gray-700 hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500">
                             Se connecter
+                        </a>
+                    </div>
+
+                    <div class="mt-2 text-center">
+                        <a href="{{ route('password.change') }}"
+                            class="text-sm font-medium text-blue-600 hover:text-blue-500">
+                            Changer votre mot de passe
                         </a>
                     </div>
                 </div>

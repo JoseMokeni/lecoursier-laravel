@@ -110,7 +110,7 @@ class UserControllerTest extends TestCase
         ]);
 
         // Assert welcome email was sent
-        Mail::assertSent(WelcomeUserMail::class, function($mail) use ($userData) {
+        Mail::assertQueued(WelcomeUserMail::class, function($mail) use ($userData) {
             return $mail->hasTo($userData['email']);
         });
     }
@@ -416,7 +416,7 @@ class UserControllerTest extends TestCase
         $response->assertSessionHas('success');
 
         // Assert password change notification was sent
-        Mail::assertSent(PasswordChangedMail::class, function($mail) use ($user) {
+        Mail::assertQueued(PasswordChangedMail::class, function($mail) use ($user) {
             return $mail->hasTo($user->email);
         });
     }
@@ -458,7 +458,7 @@ class UserControllerTest extends TestCase
         $response->assertRedirect('/users');
 
         // Email should be sent but without password included
-        Mail::assertSent(PasswordChangedMail::class, function($mail) {
+        Mail::assertQueued(PasswordChangedMail::class, function($mail) {
             // We would need to check the mail content to verify password not included
             // but we can at least verify it was sent to the right address
             return $mail->hasTo($this->mainAdmin->email);
@@ -677,5 +677,154 @@ class UserControllerTest extends TestCase
         $this->assertDatabaseMissing('users', [
             'id' => $regularUser->id
         ]);
+    }
+
+    public function test_change_password_displays_form()
+    {
+        $response = $this->get('/change-password');
+
+        $response->assertStatus(200);
+        $response->assertViewIs('pages.users.change-password');
+    }
+
+    public function test_update_password_with_valid_credentials()
+    {
+        // Create a user in the tenant context
+        $user = User::factory()->create([
+            'username' => 'testuser',
+            'password' => bcrypt('currentpassword')
+        ]);
+
+        $updateData = [
+            'company_code' => $this->tenantId,
+            'username' => 'testuser',
+            'old_password' => 'currentpassword',
+            'password' => 'newpassword123',
+            'password_confirmation' => 'newpassword123'
+        ];
+
+        $response = $this->post('/change-password', $updateData);
+
+        // Should redirect to login with success message
+        $response->assertRedirect(route('login'));
+        $response->assertSessionHas('success');
+
+        // Manually initialize tenant context to verify the password was updated
+        tenancy()->initialize($this->tenant);
+        $updatedUser = User::where('username', 'testuser')->first();
+        $this->assertTrue(\Illuminate\Support\Facades\Hash::check('newpassword123', $updatedUser->password));
+        tenancy()->end();
+    }
+
+    public function test_update_password_with_invalid_company_code()
+    {
+        $updateData = [
+            'company_code' => 'nonexistent',
+            'username' => 'testuser',
+            'old_password' => 'currentpassword',
+            'password' => 'newpassword123',
+            'password_confirmation' => 'newpassword123'
+        ];
+
+        $response = $this->post('/change-password', $updateData);
+
+        // Should return back with validation errors
+        $response->assertSessionHasErrors(['company_code']);
+    }
+
+    public function test_update_password_with_invalid_username()
+    {
+        $updateData = [
+            'company_code' => $this->tenantId,
+            'username' => 'nonexistentuser',
+            'old_password' => 'currentpassword',
+            'password' => 'newpassword123',
+            'password_confirmation' => 'newpassword123'
+        ];
+
+        $response = $this->post('/change-password', $updateData);
+
+        // Should return back with validation errors
+        $response->assertSessionHasErrors(['username']);
+    }
+
+    public function test_update_password_with_incorrect_current_password()
+    {
+        // Create a user in the tenant context
+        tenancy()->initialize($this->tenant);
+        $user = User::factory()->create([
+            'username' => 'testuser',
+            'password' => bcrypt('currentpassword')
+        ]);
+        tenancy()->end();
+
+        $updateData = [
+            'company_code' => $this->tenantId,
+            'username' => 'testuser',
+            'old_password' => 'wrongpassword',
+            'password' => 'newpassword123',
+            'password_confirmation' => 'newpassword123'
+        ];
+
+        $response = $this->post('/change-password', $updateData);
+
+        // Should return back with validation errors
+        $response->assertSessionHasErrors(['old_password']);
+    }
+
+    public function test_update_password_validates_password_confirmation()
+    {
+        // Create a user in the tenant context
+        tenancy()->initialize($this->tenant);
+        $user = User::factory()->create([
+            'username' => 'testuser',
+            'password' => bcrypt('currentpassword')
+        ]);
+        tenancy()->end();
+
+        $updateData = [
+            'company_code' => $this->tenantId,
+            'username' => 'testuser',
+            'old_password' => 'currentpassword',
+            'password' => 'newpassword123',
+            'password_confirmation' => 'differentpassword'
+        ];
+
+        $response = $this->post('/change-password', $updateData);
+
+        // Should return back with validation errors
+        $response->assertSessionHasErrors(['password']);
+    }
+
+    public function test_update_password_validates_password_length()
+    {
+        // Create a user in the tenant context
+        tenancy()->initialize($this->tenant);
+        $user = User::factory()->create([
+            'username' => 'testuser',
+            'password' => bcrypt('currentpassword')
+        ]);
+        tenancy()->end();
+
+        $updateData = [
+            'company_code' => $this->tenantId,
+            'username' => 'testuser',
+            'old_password' => 'currentpassword',
+            'password' => 'short',
+            'password_confirmation' => 'short'
+        ];
+
+        $response = $this->post('/change-password', $updateData);
+
+        // Should return back with validation errors
+        $response->assertSessionHasErrors(['password']);
+    }
+
+    public function test_update_password_requires_all_fields()
+    {
+        $response = $this->post('/change-password', []);
+
+        // Should return back with validation errors for all required fields
+        $response->assertSessionHasErrors(['company_code', 'username', 'old_password', 'password']);
     }
 }

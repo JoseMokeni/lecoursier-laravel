@@ -13,7 +13,6 @@ use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Mail;
 use Illuminate\View\View;
-use Tenancy\Facades\Tenancy;
 
 class RegisterController extends Controller
 {
@@ -47,14 +46,15 @@ class RegisterController extends Controller
 
         // Create a new tenant with company code as tenant id
         $tenant = Tenant::create([
-            'id' => $validated['code']
+            'id' => $validated['code'],
+            'name' => $validated['name'],
+            'email' => $validated['email'],
+            'phone' => $validated['phone'],
+            'address' => $validated['address'],
         ]);
 
         // Switch to the tenant environment
         tenancy()->initialize($tenant);
-
-        // Create a new company in the tenant database
-        $company = Company::create($validated);
 
         // Save the default password before encryption
         $defaultPassword = $validated['code'];
@@ -96,6 +96,6 @@ class RegisterController extends Controller
 
         // Redirect directly to dashboard instead of login page
         return redirect('/dashboard')
-            ->with('success', 'Company registered successfully. You are now logged in. Check your email for login details.');
+            ->with('success', 'Compagnie créée avec succès. Vous êtes maintenant connecté.');
     }
 }

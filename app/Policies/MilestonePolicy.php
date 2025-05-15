@@ -13,7 +13,8 @@ class MilestonePolicy
      */
     public function viewAny(User $user): bool
     {
-        return false;
+        // authorize if user is admin
+        return $user->isAdmin();
     }
 
     /**
@@ -21,7 +22,8 @@ class MilestonePolicy
      */
     public function view(User $user, Milestone $milestone): bool
     {
-        return false;
+        // authorize if user is admin
+        return $user->isAdmin();
     }
 
     /**
@@ -29,7 +31,8 @@ class MilestonePolicy
      */
     public function create(User $user): bool
     {
-        return false;
+        // authorize if user is admin
+        return $user->isAdmin();
     }
 
     /**
@@ -37,7 +40,7 @@ class MilestonePolicy
      */
     public function update(User $user, Milestone $milestone): bool
     {
-        return false;
+        return $user->isAdmin();
     }
 
     /**
@@ -45,22 +48,6 @@ class MilestonePolicy
      */
     public function delete(User $user, Milestone $milestone): bool
     {
-        return false;
-    }
-
-    /**
-     * Determine whether the user can restore the model.
-     */
-    public function restore(User $user, Milestone $milestone): bool
-    {
-        return false;
-    }
-
-    /**
-     * Determine whether the user can permanently delete the model.
-     */
-    public function forceDelete(User $user, Milestone $milestone): bool
-    {
-        return false;
+        return $user->isAdmin();
     }
 }

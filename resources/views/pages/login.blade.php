@@ -103,12 +103,6 @@
                                 Se souvenir de moi
                             </label>
                         </div>
-
-                        <div class="text-sm">
-                            <a href="#" class="font-medium text-blue-600 hover:text-blue-500">
-                                Mot de passe oublié?
-                            </a>
-                        </div>
                     </div>
 
                     <div>
@@ -126,12 +120,17 @@
                         </div>
                         <div class="relative flex justify-center text-sm">
                             <span class="px-2 bg-white text-gray-500">
-                                Vous n'avez pas de compte?
+                                Options supplémentaires
                             </span>
                         </div>
                     </div>
 
-                    <div class="mt-6">
+                    <div class="mt-6 space-y-4">
+                        <a href="{{ route('password.change') }}"
+                            class="w-full flex justify-center py-2 px-4 border border-gray-300 rounded-md shadow-sm bg-white text-sm font-medium text-gray-700 hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500">
+                            Changer de mot de passe
+                        </a>
+
                         <a href="/register"
                             class="w-full flex justify-center py-2 px-4 border border-gray-300 rounded-md shadow-sm bg-white text-sm font-medium text-gray-700 hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500">
                             Créer un compte

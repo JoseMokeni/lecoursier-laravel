@@ -37,7 +37,7 @@ class ContactFormTest extends TestCase
         $response->assertRedirect();
 
         // Assert mail was sent
-        Mail::assertSent(ContactFormMail::class, function ($mail) use ($formData) {
+        Mail::assertQueued(ContactFormMail::class, function ($mail) use ($formData) {
             unset($formData['privacy']);
             return $mail->data == $formData &&
                    $mail->hasTo(config('mail.contact_address', 'contact@lecoursier.app'));
@@ -249,7 +249,7 @@ class ContactFormTest extends TestCase
         $response->assertRedirect();
 
         // Assert mail was sent
-        Mail::assertSent(ContactFormMail::class);
+        Mail::assertQueued(ContactFormMail::class);
     }
 
     /**

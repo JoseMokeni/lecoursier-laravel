@@ -5,6 +5,7 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
+use Illuminate\Database\Eloquent\Relations\HasMany;
 
 class Milestone extends Model
 {
@@ -33,10 +34,10 @@ class Milestone extends Model
     ];
 
     /**
-     * The tasks that belong to the milestone.
+     * Get the tasks for the milestone.
      */
-    public function tasks(): BelongsToMany
+    public function tasks(): HasMany
     {
-        return $this->belongsToMany(Task::class, 'task_milestones');
+        return $this->hasMany(Task::class);
     }
 }

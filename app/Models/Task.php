@@ -27,6 +27,7 @@ class Task extends Model
         'due_date',
         'answered_at',
         'user_id',
+        'milestone_id'
     ];
 
     /**
@@ -50,10 +51,10 @@ class Task extends Model
     }
 
     /**
-     * The milestones that belong to the task.
+     * The milestone that belong to the task.
      */
-    public function milestones(): BelongsToMany
+    public function milestone(): BelongsTo
     {
-        return $this->belongsToMany(Milestone::class, 'task_milestones');
+        return $this->belongsTo(Milestone::class);
     }
 }

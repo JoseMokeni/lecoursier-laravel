@@ -25,6 +25,13 @@
                             class="border-blue-500 text-gray-900 inline-flex items-center px-1 pt-1 border-b-2 text-sm font-medium">
                             Utilisateurs
                         </a>
+                        <a href="/statistics"
+                            class="border-transparent text-gray-500 hover:border-gray-300 hover:text-gray-700 inline-flex items-center px-1 pt-1 border-b-2 text-sm font-medium">
+                            Statistiques
+                        </a>
+                        <a href="/tasks/history"
+                            class="border-transparent text-gray-500 hover:border-gray-300 hover:text-gray-700 inline-flex items-center px-1 pt-1 border-b-2 text-sm font-medium">Historique
+                            des tâches</a>
                         @if (auth()->user()->username == session('tenant_id'))
                             <a href="/billing"
                                 class="border-transparent text-gray-500 hover:border-gray-300 hover:text-gray-700 inline-flex items-center px-1 pt-1 border-b-2 text-sm font-medium">
@@ -82,6 +89,10 @@
                 <a href="/users"
                     class="border-blue-500 bg-blue-50 text-blue-700 block pl-3 pr-4 py-2 border-l-4 text-base font-medium">
                     Utilisateurs
+                </a>
+                <a href="/statistics"
+                    class="border-transparent text-gray-500 hover:bg-gray-50 hover:border-gray-300 hover:text-gray-700 block pl-3 pr-4 py-2 border-l-4 text-base font-medium">
+                    Statistiques
                 </a>
                 @if (auth()->user()->username == session('tenant_id'))
                     <a href="/billing"
@@ -165,7 +176,8 @@
                                 </div>
 
                                 <div>
-                                    <label for="email" class="block text-sm font-medium text-gray-700">Email</label>
+                                    <label for="email"
+                                        class="block text-sm font-medium text-gray-700">Email</label>
                                     <input type="email" name="email" id="email"
                                         value="{{ old('email', $user->email) }}" required
                                         class="mt-1 block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm">

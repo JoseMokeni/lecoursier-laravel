@@ -8,6 +8,7 @@ use App\Http\Controllers\Auth\LoginController;
 use App\Http\Controllers\Web\DashboardController;
 use App\Http\Controllers\Web\UserController;
 use App\Http\Controllers\Web\TenantController;
+use App\Http\Controllers\Web\StatisticsController;
 use App\Http\Controllers\ErrorController;
 use Illuminate\Support\Facades\Auth;
 
@@ -80,6 +81,10 @@ foreach (config('tenancy.central_domains') as $domain) {
         Route::get('/login', [LoginController::class, 'create'])->name('login');
         Route::post('/login', [LoginController::class, 'store']);
 
+        // Password change routes
+        Route::get('/change-password', [UserController::class, 'changePassword'])->name('password.change');
+        Route::post('/change-password', [UserController::class, 'updatePassword'])->name('password.update');
+
         // Error routes (moved outside middleware groups for direct access)
         Route::get('/errors/tenant-inactive', [ErrorController::class, 'tenantInactive'])->name('error.tenant-inactive');
         Route::get('/errors/tenant-required', [ErrorController::class, 'tenantRequired'])->name('error.tenant-required');
@@ -91,6 +96,14 @@ foreach (config('tenancy.central_domains') as $domain) {
         Route::get('/dashboard', [DashboardController::class, 'index'])
             ->middleware(['web.tenant.subscribed'])
             ->name('dashboard');
+
+        // Statistics routes
+        Route::get('/statistics', [StatisticsController::class, 'index'])
+            ->middleware(['web.active.tenant', 'web.tenant.subscribed'])
+            ->name('statistics.index');
+        Route::get('/statistics/couriers', [StatisticsController::class, 'couriers'])
+            ->middleware(['web.active.tenant', 'web.tenant.subscribed'])
+            ->name('statistics.couriers');
 
         // User management routes
         Route::get('/users', [UserController::class, 'index'])
@@ -162,6 +175,10 @@ foreach (config('tenancy.central_domains') as $domain) {
         Route::get('/billing/portal', function (Request $request) {
             return tenancy()->tenant->redirectToBillingPortal(route('billing'));
         })->middleware(['main.admin.only'])->name('billing.portal');
+
+        // Task history view
+        Route::get('/tasks/history', [\App\Http\Controllers\Web\TaskController::class, 'history'])
+            ->middleware(['web.active.tenant', 'web.tenant.subscribed'])
+            ->name('tasks.history');
     });
 }
-

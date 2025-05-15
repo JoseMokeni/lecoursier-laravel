@@ -21,19 +21,32 @@
                             class="border-blue-500 text-gray-900 inline-flex items-center px-1 pt-1 border-b-2 text-sm font-medium">
                             Tableau de bord
                         </a>
-                        <a href="/users"
-                            class="border-transparent text-gray-500 hover:border-gray-300 hover:text-gray-700 inline-flex items-center px-1 pt-1 border-b-2 text-sm font-medium">
-                            Utilisateurs
-                        </a>
+                        @if (session('subscribed') == true)
+                            <a href="/users"
+                                class="border-transparent text-gray-500 hover:border-gray-300 hover:text-gray-700 inline-flex items-center px-1 pt-1 border-b-2 text-sm font-medium">
+                                Utilisateurs
+                            </a>
+                            <a href="/statistics"
+                                class="border-transparent text-gray-500 hover:border-gray-300 hover:text-gray-700 inline-flex items-center px-1 pt-1 border-b-2 text-sm font-medium">
+                                Statistiques
+                            </a>
+                            <a href="/tasks/history"
+                                class="border-transparent text-gray-500 hover:border-gray-300 hover:text-gray-700 inline-flex items-center px-1 pt-1 border-b-2 text-sm font-medium">
+                                Historique des tâches
+                            </a>
+                        @endif
+
                         @if (auth()->user()->username == session('tenant_id'))
                             <a href="/billing"
                                 class="border-transparent text-gray-500 hover:border-gray-300 hover:text-gray-700 inline-flex items-center px-1 pt-1 border-b-2 text-sm font-medium">
                                 Abonnement
                             </a>
-                            <a href="/tenants/settings"
-                                class="border-transparent text-gray-500 hover:border-gray-300 hover:text-gray-700 inline-flex items-center px-1 pt-1 border-b-2 text-sm font-medium">
-                                Paramètres
-                            </a>
+                            @if (session('subscribed') == true)
+                                <a href="/tenants/settings"
+                                    class="border-transparent text-gray-500 hover:border-gray-300 hover:text-gray-700 inline-flex items-center px-1 pt-1 border-b-2 text-sm font-medium">
+                                    Paramètres
+                                </a>
+                            @endif
                         @endif
                     </div>
                 </div>
@@ -78,13 +91,23 @@
                 <a href="/dashboard"
                     class="bg-blue-50 border-blue-500 text-blue-700 block pl-3 pr-4 py-2 border-l-4 text-base font-medium">Tableau
                     de bord</a>
-                <a href="/users"
-                    class="border-transparent text-gray-600 hover:bg-gray-50 hover:border-gray-300 hover:text-gray-800 block pl-3 pr-4 py-2 border-l-4 text-base font-medium">Utilisateurs</a>
+                @if (session('subscribed') == true)
+                    <a href="/users"
+                        class="border-transparent text-gray-600 hover:bg-gray-50 hover:border-gray-300 hover:text-gray-800 block pl-3 pr-4 py-2 border-l-4 text-base font-medium">Utilisateurs</a>
+                    <a href="/statistics"
+                        class="border-transparent text-gray-600 hover:bg-gray-50 hover:border-gray-300 hover:text-gray-800 block pl-3 pr-4 py-2 border-l-4 text-base font-medium">Statistiques</a>
+                    <a href="/tasks/history"
+                        class="border-transparent text-gray-600 hover:bg-gray-50 hover:border-gray-300 hover:text-gray-800 block pl-3 pr-4 py-2 border-l-4 text-base font-medium">Historique
+                        des tâches</a>
+                @endif
+
                 @if (auth()->user()->username == session('tenant_id'))
                     <a href="/billing"
                         class="border-transparent text-gray-600 hover:bg-gray-50 hover:border-gray-300 hover:text-gray-800 block pl-3 pr-4 py-2 border-l-4 text-base font-medium">Abonnement</a>
-                    <a href="/tenants/settings"
-                        class="border-transparent text-gray-600 hover:bg-gray-50 hover:border-gray-300 hover:text-gray-800 block pl-3 pr-4 py-2 border-l-4 text-base font-medium">Paramètres</a>
+                    @if (session('subscribed') == true)
+                        <a href="/tenants/settings"
+                            class="border-transparent text-gray-600 hover:bg-gray-50 hover:border-gray-300 hover:text-gray-800 block pl-3 pr-4 py-2 border-l-4 text-base font-medium">Paramètres</a>
+                    @endif
                 @endif
             </div>
             <div class="pt-4 pb-3 border-t border-gray-200">
@@ -111,6 +134,21 @@
             <div class="bg-red-100 border-l-4 border-red-500 text-red-700 p-4 rounded" role="alert">
                 <p class="font-bold">Erreur</p>
                 <p>{{ session('error') }}</p>
+            </div>
+        </div>
+    @endif
+
+    @if (session('subscribed') === false)
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 mt-4">
+            <div class="bg-yellow-100 border-l-4 border-yellow-500 text-yellow-700 p-4 rounded" role="alert">
+                <p class="font-bold">Avertissement</p>
+                <p>Vous n'êtes pas abonné. Veuillez vous abonner pour continuer à utiliser ce service.
+                    @if (auth()->user()->username == session('tenant_id'))
+                        Cliquez <a href="{{ route('billing.plans') }}" class="underline">ici</a>.
+                    @else
+                        Contactez votre administrateur pour vous abonner.
+                    @endif
+                </p>
             </div>
         </div>
     @endif
@@ -153,7 +191,30 @@
                                 <dd class="mt-1 text-3xl font-semibold text-gray-900">{{ $userCount }}</dd>
                             </div>
                         </div>
-                        <!-- You can add more stat cards here -->
+                        <div class="bg-white overflow-hidden shadow rounded-lg">
+                            <div class="px-4 py-5 sm:p-6">
+                                <dt class="text-sm font-medium text-gray-500 truncate">Total des tâches</dt>
+                                <dd class="mt-1 text-3xl font-semibold text-gray-900">{{ $totalTasks }}</dd>
+                            </div>
+                        </div>
+                        <div class="bg-white overflow-hidden shadow rounded-lg">
+                            <div class="px-4 py-5 sm:p-6">
+                                <dt class="text-sm font-medium text-gray-500 truncate">Tâches en cours</dt>
+                                <dd class="mt-1 text-3xl font-semibold text-gray-900">{{ $tasksInProgress }}</dd>
+                            </div>
+                        </div>
+                        <div class="bg-white overflow-hidden shadow rounded-lg">
+                            <div class="px-4 py-5 sm:p-6">
+                                <dt class="text-sm font-medium text-gray-500 truncate">Tâches terminées</dt>
+                                <dd class="mt-1 text-3xl font-semibold text-gray-900">{{ $tasksCompleted }}</dd>
+                            </div>
+                        </div>
+                        <div class="bg-white overflow-hidden shadow rounded-lg">
+                            <div class="px-4 py-5 sm:p-6">
+                                <dt class="text-sm font-medium text-gray-500 truncate">Tâches en attente</dt>
+                                <dd class="mt-1 text-3xl font-semibold text-gray-900">{{ $tasksPending }}</dd>
+                            </div>
+                        </div>
                     </div>
                 </div>
 

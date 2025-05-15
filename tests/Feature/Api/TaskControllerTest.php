@@ -325,4 +325,128 @@ class TaskControllerTest extends TestCase
         $this->assertEquals('completed', $response->json('data.status'));
         $this->assertNotNull($response->json('data.completedAt'));
     }
+
+    #[Test]
+    /** Test that admin users can start tasks */
+    public function admin_can_start_task()
+    {
+        $response = $this->withHeaders([
+            'Authorization' => 'Bearer ' . $this->adminUserToken,
+            'x-tenant-id'   => $this->tenantId,
+        ])->postJson('/api/tasks/' . $this->task->id . '/start');
+
+        $response->assertStatus(200);
+        $this->assertEquals('in_progress', $response->json('data.status'));
+        $this->assertDatabaseHas('tasks', [
+            'id'     => $this->task->id,
+            'status' => 'in_progress',
+        ]);
+    }
+
+    #[Test]
+    /** Test that users can start their assigned tasks */
+    public function user_can_start_assigned_task()
+    {
+        // Create a task assigned to the regular user
+        $userTask = Task::create([
+            'name' => 'User Task',
+            'description' => 'Task assigned to regular user',
+            'priority' => 'medium',
+            'status' => 'pending',
+            'due_date' => now()->addDays(7),
+            'user_id' => $this->regularUser->id,
+            'milestone_id' => $this->milestone->id,
+        ]);
+
+        $response = $this->withHeaders([
+            'Authorization' => 'Bearer ' . $this->regularUserToken,
+            'x-tenant-id'   => $this->tenantId,
+        ])->postJson('/api/tasks/' . $userTask->id . '/start');
+
+        $response->assertStatus(200);
+        $this->assertEquals('in_progress', $response->json('data.status'));
+        $this->assertDatabaseHas('tasks', [
+            'id'     => $userTask->id,
+            'status' => 'in_progress',
+        ]);
+    }
+
+    #[Test]
+    /** Test that users cannot start tasks that are not assigned to them */
+    public function user_cannot_start_unassigned_task()
+    {
+        $response = $this->withHeaders([
+            'Authorization' => 'Bearer ' . $this->regularUserToken,
+            'x-tenant-id'   => $this->tenantId,
+        ])->postJson('/api/tasks/' . $this->task->id . '/start');
+
+        $response->assertStatus(403);
+        $this->assertDatabaseHas('tasks', [
+            'id'     => $this->task->id,
+            'status' => 'pending',
+        ]);
+    }
+
+    #[Test]
+    /** Test that admin users can complete tasks using the complete endpoint */
+    public function admin_can_complete_task_via_endpoint()
+    {
+        $response = $this->withHeaders([
+            'Authorization' => 'Bearer ' . $this->adminUserToken,
+            'x-tenant-id'   => $this->tenantId,
+        ])->postJson('/api/tasks/' . $this->task->id . '/complete');
+
+        $response->assertStatus(200);
+        $this->assertEquals('completed', $response->json('data.status'));
+        $this->assertNotNull($response->json('data.completedAt'));
+        $this->assertDatabaseHas('tasks', [
+            'id'     => $this->task->id,
+            'status' => 'completed',
+        ]);
+    }
+
+    #[Test]
+    /** Test that users can complete their assigned tasks */
+    public function user_can_complete_assigned_task()
+    {
+        // Create a task assigned to the regular user
+        $userTask = Task::create([
+            'name' => 'User Task to Complete',
+            'description' => 'Task assigned to regular user',
+            'priority' => 'medium',
+            'status' => 'in_progress',
+            'due_date' => now()->addDays(7),
+            'user_id' => $this->regularUser->id,
+            'milestone_id' => $this->milestone->id,
+        ]);
+
+        $response = $this->withHeaders([
+            'Authorization' => 'Bearer ' . $this->regularUserToken,
+            'x-tenant-id'   => $this->tenantId,
+        ])->postJson('/api/tasks/' . $userTask->id . '/complete');
+
+        $response->assertStatus(200);
+        $this->assertEquals('completed', $response->json('data.status'));
+        $this->assertNotNull($response->json('data.completedAt'));
+        $this->assertDatabaseHas('tasks', [
+            'id'     => $userTask->id,
+            'status' => 'completed',
+        ]);
+    }
+
+    #[Test]
+    /** Test that users cannot complete tasks that are not assigned to them */
+    public function user_cannot_complete_unassigned_task()
+    {
+        $response = $this->withHeaders([
+            'Authorization' => 'Bearer ' . $this->regularUserToken,
+            'x-tenant-id'   => $this->tenantId,
+        ])->postJson('/api/tasks/' . $this->task->id . '/complete');
+
+        $response->assertStatus(403);
+        $this->assertDatabaseHas('tasks', [
+            'id'     => $this->task->id,
+            'status' => 'pending',
+        ]);
+    }
 }

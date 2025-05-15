@@ -96,6 +96,6 @@ class RegisterController extends Controller
 
         // Redirect directly to dashboard instead of login page
         return redirect('/dashboard')
-            ->with('success', 'Company registered successfully. You are now logged in. Check your email for login details.');
+            ->with('success', 'Compagnie créée avec succès. Vous êtes maintenant connecté.');
     }
 }

@@ -29,6 +29,9 @@ RUN pecl install redis && docker-php-ext-enable redis
 # Install and enable xdebug
 RUN pecl install xdebug && docker-php-ext-enable xdebug
 
+# Install and enable excimer
+RUN pecl install excimer && docker-php-ext-enable excimer
+
 # Copy virtual host configuration
 COPY ./docker/apache/vhost.conf /etc/apache2/sites-available/000-default.conf
 

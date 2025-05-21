@@ -172,7 +172,9 @@
                         <div class="px-4 py-5 sm:p-6 h-full flex flex-col">
                             <h3 class="text-lg font-medium leading-6 text-gray-900">Plan Mensuel</h3>
                             <div class="mt-4 flex items-baseline">
-                                <span class="text-5xl font-extrabold text-gray-900">$20</span>
+                                <span class="text-5xl font-extrabold text-gray-900">
+                                    ${{ $monthlyPrice }}
+                                </span>
                                 <span class="ml-1 text-xl font-semibold text-gray-500">/mois</span>
                             </div>
                             <p class="mt-5 text-gray-500">Parfait pour tester notre service</p>
@@ -232,11 +234,14 @@
 
                             <h3 class="text-lg font-medium leading-6 text-gray-900">Plan Annuel</h3>
                             <div class="mt-4 flex items-baseline">
-                                <span class="text-5xl font-extrabold text-gray-900">$180</span>
+                                <span class="text-5xl font-extrabold text-gray-900">
+                                    ${{ $yearlyPrice }}
+                                </span>
                                 <span class="ml-1 text-xl font-semibold text-gray-500">/an</span>
                             </div>
                             <p class="mt-5 text-gray-500">
-                                <span class="text-green-600 font-medium">Économisez $60 par an</span>
+                                <span class="text-green-600 font-medium">Économisez {{ $yearlyDiscount }}$ par
+                                    an</span>
                                 <br>Le meilleur rapport qualité-prix
                             </p>
 

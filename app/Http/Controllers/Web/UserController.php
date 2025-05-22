@@ -10,6 +10,7 @@ use App\Models\User;
 use App\Services\UserService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Mail;
@@ -29,25 +30,36 @@ class UserController extends Controller
      */
     public function index(Request $request)
     {
-        $query = User::query();
+        // Create cache key based on all current filters and pagination
+        $cacheKey = 'users.list.' . md5(json_encode([
+            'role' => $request->role,
+            'status' => $request->status,
+            'search' => $request->search,
+            'page' => $request->page ?? 1
+        ]));
 
-        // Apply filters if they exist in the request
-        if ($request->filled('role') && in_array($request->role, ['admin', 'user'])) {
-            $query->where('role', $request->role);
-        }
-        if ($request->filled('status') && in_array($request->status, ['active', 'inactive'])) {
-            $query->where('status', $request->status);
-        }
-        if ($request->filled('search')) {
-            $search = $request->search;
-            $query->where(function($q) use ($search) {
-                $q->where('name', 'like', "%{$search}%")
-                  ->orWhere('username', 'like', "%{$search}%")
-                  ->orWhere('email', 'like', "%{$search}%");
-            });
-        }
+        // Get users from cache or database (cache for 30 minutes)
+        $users = Cache::remember($cacheKey, 1800, function () use ($request) {
+            $query = User::query();
 
-        $users = $query->orderBy('created_at', 'desc')->paginate(10)->withQueryString();
+            // Apply filters if they exist in the request
+            if ($request->filled('role') && in_array($request->role, ['admin', 'user'])) {
+                $query->where('role', $request->role);
+            }
+            if ($request->filled('status') && in_array($request->status, ['active', 'inactive'])) {
+                $query->where('status', $request->status);
+            }
+            if ($request->filled('search')) {
+                $search = $request->search;
+                $query->where(function($q) use ($search) {
+                    $q->where('name', 'like', "%{$search}%")
+                      ->orWhere('username', 'like', "%{$search}%")
+                      ->orWhere('email', 'like', "%{$search}%");
+                });
+            }
+
+            return $query->orderBy('created_at', 'desc')->paginate(10)->withQueryString();
+        });
 
         return view('pages.users.index', ['users' => $users]);
     }
@@ -110,6 +122,9 @@ class UserController extends Controller
             Log::error('Failed to send welcome email: ' . $e->getMessage());
         }
 
+        // Clear user listing cache after creating a new user
+        $this->clearUserCache();
+
         return redirect('/users')->with('success', 'Utilisateur créé avec succès! Un email de bienvenue a été envoyé.');
     }
 
@@ -118,7 +133,11 @@ class UserController extends Controller
      */
     public function edit($id)
     {
-        $user = $this->userService->getUser($id);
+        // Cache the user data for edit form (5 minutes)
+        $user = Cache::remember('user.edit.' . $id, 300, function () use ($id) {
+            return $this->userService->getUser($id);
+        });
+
         $currentUser = Auth::user();
 
         if (!$user) {
@@ -219,6 +238,9 @@ class UserController extends Controller
 
         $this->userService->updateUser($id, $validated);
 
+        // Clear user caches after update
+        $this->clearUserCache($id);
+
         // Send password changed email notification if password was updated
         if ($passwordUpdated) {
             try {
@@ -273,6 +295,9 @@ class UserController extends Controller
             return redirect('/users')->with('error', 'Erreur lors de la suppression de l\'utilisateur');
         }
 
+        // Clear user caches after deletion
+        $this->clearUserCache($id);
+
         return redirect('/users')->with('success', 'Utilisateur supprimé avec succès!');
     }
 
@@ -326,5 +351,21 @@ class UserController extends Controller
         tenancy()->end();
 
         return redirect()->route('login')->with('success', 'Mot de passe modifié avec succès. Veuillez vous connecter avec votre nouveau mot de passe.');
+    }
+
+    /**
+     * Clear user related caches
+     *
+     * @param int|null $userId
+     */
+    private function clearUserCache($userId = null)
+    {
+        // Clear user listing cache (all patterns)
+        Cache::flush('users.list.*');
+
+        // If specific user ID provided, clear that user's cache
+        if ($userId) {
+            Cache::forget('user.edit.' . $userId);
+        }
     }
 }

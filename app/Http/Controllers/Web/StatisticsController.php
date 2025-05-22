@@ -6,6 +6,7 @@ use App\Http\Controllers\Controller;
 use App\Services\StatisticsService;
 use Carbon\Carbon;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Cache;
 
 class StatisticsController extends Controller
 {
@@ -28,11 +29,24 @@ class StatisticsController extends Controller
             list($startDate, $endDate) = $this->getDateRangeFromFilterType($filterType);
         }
 
-        // Application des filtres de dates au service
-        $this->statisticsService->setDateRange($startDate, $endDate);
+        // Create a cache key based on date parameters
+        $cacheKey = 'statistics.dashboard.' . md5(json_encode([
+            'startDate' => $startDate,
+            'endDate' => $endDate,
+            'filterType' => $filterType,
+        ]));
 
-        // Récupération des statistiques filtrées
-        $stats = $this->statisticsService->getAllStats();
+        // Get stats from cache or compute them (cache for 30 minutes)
+        $stats = Cache::remember($cacheKey, 1800, function () use ($startDate, $endDate) {
+            // Application des filtres de dates au service
+            $this->statisticsService->setDateRange($startDate, $endDate);
+
+            // Récupération des statistiques filtrées
+            return $this->statisticsService->getAllStats();
+        });
+
+        // Application des filtres de dates au service (needed for getCurrentFilterInfo)
+        $this->statisticsService->setDateRange($startDate, $endDate);
 
         // Obtenir l'information du filtre actuel
         $filterInfo = $this->statisticsService->getCurrentFilterInfo();
@@ -58,17 +72,32 @@ class StatisticsController extends Controller
         $startDate = $request->get('start_date');
         $endDate = $request->get('end_date');
         $filterType = $request->get('filter_type', 'all');
+        $page = $request->get('page', 1);
 
         // Application des filtres prédéfinis
         if ($filterType !== 'custom') {
             list($startDate, $endDate) = $this->getDateRangeFromFilterType($filterType);
         }
 
-        // Application des filtres de dates au service
-        $this->statisticsService->setDateRange($startDate, $endDate);
+        // Create a cache key based on all parameters including pagination
+        $cacheKey = 'statistics.couriers.' . md5(json_encode([
+            'startDate' => $startDate,
+            'endDate' => $endDate,
+            'filterType' => $filterType,
+            'page' => $page,
+        ]));
 
-        // Récupération des statistiques des coursiers
-        $couriers = $this->statisticsService->getTasksByUserPaginated($request->get('page', 1));
+        // Get courier stats from cache or compute them (cache for 30 minutes)
+        $couriers = Cache::remember($cacheKey, 1800, function () use ($startDate, $endDate, $page) {
+            // Application des filtres de dates au service
+            $this->statisticsService->setDateRange($startDate, $endDate);
+
+            // Récupération des statistiques des coursiers
+            return $this->statisticsService->getTasksByUserPaginated($page);
+        });
+
+        // Application des filtres de dates au service (needed for getCurrentFilterInfo)
+        $this->statisticsService->setDateRange($startDate, $endDate);
 
         // Obtenir l'information du filtre actuel
         $filterInfo = $this->statisticsService->getCurrentFilterInfo();

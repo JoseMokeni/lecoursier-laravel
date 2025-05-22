@@ -11,6 +11,8 @@ use App\Http\Controllers\Web\TenantController;
 use App\Http\Controllers\Web\StatisticsController;
 use App\Http\Controllers\ErrorController;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Log;
+use Laravel\Cashier\Cashier;
 
 foreach (config('tenancy.central_domains') as $domain) {
     Route::domain($domain)->group(function () {
@@ -143,7 +145,31 @@ foreach (config('tenancy.central_domains') as $domain) {
         })->middleware(['main.admin.only'])->name('billing');
 
         Route::get('/billing/plans', function () {
-            return view('pages.tenants.plans');
+            // get monthly and yearly prices using price ids
+            $stripe = Cashier::stripe();
+            $prices = $stripe->prices->all([
+                'product' => config('cashier.products.default'),
+                'active' => true,
+                'expand' => ['data.product'],
+            ]);
+            $monthlyPrice = null;
+            $yearlyPrice = null;
+
+            foreach ($prices->data as $price) {
+                Log::info('Price: ', [$price]);
+                if ($price->id === config('cashier.prices.monthly')) {
+                    $monthlyPrice = $price->unit_amount / 100;
+                } elseif ($price->id === config('cashier.prices.yearly')) {
+                    $yearlyPrice = $price->unit_amount / 100;
+                }
+            }
+
+            $yearlyDiscount = $monthlyPrice * 12 - $yearlyPrice;
+            return view('pages.tenants.plans', [
+                'monthlyPrice' => $monthlyPrice,
+                'yearlyPrice' => $yearlyPrice,
+                'yearlyDiscount' => $yearlyDiscount,
+            ]);
         })
             ->middleware(['main.admin.only'])
             ->name('billing.plans');

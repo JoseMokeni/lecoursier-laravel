@@ -9,6 +9,7 @@ use App\Http\Controllers\Web\DashboardController;
 use App\Http\Controllers\Web\UserController;
 use App\Http\Controllers\Web\TenantController;
 use App\Http\Controllers\Web\StatisticsController;
+use App\Http\Controllers\Web\BadgeController;
 use App\Http\Controllers\ErrorController;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Log;
@@ -206,5 +207,19 @@ foreach (config('tenancy.central_domains') as $domain) {
         Route::get('/tasks/history', [\App\Http\Controllers\Web\TaskController::class, 'history'])
             ->middleware(['web.active.tenant', 'web.tenant.subscribed'])
             ->name('tasks.history');
+
+        // Badge management routes
+        Route::get('/badges', [\App\Http\Controllers\Web\BadgeController::class, 'index'])
+            ->middleware(['web.active.tenant', 'web.tenant.subscribed'])
+            ->name('badges.index');
+        Route::get('/badges/{badgeId}', [\App\Http\Controllers\Web\BadgeController::class, 'show'])
+            ->middleware(['web.active.tenant', 'web.tenant.subscribed'])
+            ->name('badges.show');
+        Route::get('/badges/users/progress', [\App\Http\Controllers\Web\BadgeController::class, 'userProgress'])
+            ->middleware(['web.active.tenant', 'web.tenant.subscribed'])
+            ->name('badges.user-progress');
+        Route::get('/badges/users/leaderboard', [\App\Http\Controllers\Web\BadgeController::class, 'leaderboard'])
+            ->middleware(['web.active.tenant', 'web.tenant.subscribed'])
+            ->name('badges.leaderboard');
     });
 }

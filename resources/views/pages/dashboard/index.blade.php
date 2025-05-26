@@ -30,6 +30,10 @@
                                 class="border-transparent text-gray-500 hover:border-gray-300 hover:text-gray-700 inline-flex items-center px-1 pt-1 border-b-2 text-sm font-medium">
                                 Statistiques
                             </a>
+                            <a href="/badges"
+                                class="border-transparent text-gray-500 hover:border-gray-300 hover:text-gray-700 inline-flex items-center px-1 pt-1 border-b-2 text-sm font-medium">
+                                Badges
+                            </a>
                             <a href="/tasks/history"
                                 class="border-transparent text-gray-500 hover:border-gray-300 hover:text-gray-700 inline-flex items-center px-1 pt-1 border-b-2 text-sm font-medium">
                                 Historique des tâches
@@ -96,6 +100,8 @@
                         class="border-transparent text-gray-600 hover:bg-gray-50 hover:border-gray-300 hover:text-gray-800 block pl-3 pr-4 py-2 border-l-4 text-base font-medium">Utilisateurs</a>
                     <a href="/statistics"
                         class="border-transparent text-gray-600 hover:bg-gray-50 hover:border-gray-300 hover:text-gray-800 block pl-3 pr-4 py-2 border-l-4 text-base font-medium">Statistiques</a>
+                    <a href="/badges"
+                        class="border-transparent text-gray-600 hover:bg-gray-50 hover:border-gray-300 hover:text-gray-800 block pl-3 pr-4 py-2 border-l-4 text-base font-medium">Badges</a>
                     <a href="/tasks/history"
                         class="border-transparent text-gray-600 hover:bg-gray-50 hover:border-gray-300 hover:text-gray-800 block pl-3 pr-4 py-2 border-l-4 text-base font-medium">Historique
                         des tâches</a>
@@ -167,8 +173,9 @@
         <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 mt-4">
             <div class="bg-blue-100 border-l-4 border-blue-500 text-blue-700 p-4 rounded" role="alert">
                 <p class="font-bold">Période d'essai</p>
-                <p>Il vous reste {{ session('remaining_days') }} jour(s) d'essai. <a href="{{ route('billing.plans') }}"
-                        class="underline">Abonnez-vous maintenant</a> pour continuer à utiliser ce service après la
+                <p>Il vous reste {{ session('remaining_days') }} jour(s) d'essai. <a
+                        href="{{ route('billing.plans') }}" class="underline">Abonnez-vous maintenant</a> pour
+                    continuer à utiliser ce service après la
                     période d'essai.</p>
             </div>
         </div>

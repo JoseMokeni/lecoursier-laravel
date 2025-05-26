@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Api;
 use App\Events\TaskCreated;
 use App\Events\TaskDeleted;
 use App\Events\TaskUpdated;
+use App\Events\TaskCompleted;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\StoreTaskRequest;
 use App\Http\Requests\UpdateTaskRequest;
@@ -40,37 +41,24 @@ class TaskController extends Controller
         if ($role === "admin") {
             $cacheKey = "tasks.admin";
         }
-        if ($status) {
-            $cacheKey .= ".{$status}";
-        }
 
         // Get tasks from cache or database
         $tasks = Cache::remember($cacheKey, 3600, function () use ($role, $userId, $status) {
             if ($role === "admin"){
-                switch ($status) {
-                    case 'in_progress':
-                        return Task::with(['milestone', 'user'])->where('status', 'in_progress')->get();
-                    case 'completed':
-                        return Task::with(['milestone', 'user'])->where('status', 'completed')->get();
-                    case 'pending':
-                        return Task::with(['milestone', 'user'])->where('status', 'pending')->get();
-                    default:
-                        return Task::with(['milestone', 'user'])->get();
-                }
+                return Task::with(['milestone', 'user'])->get();
             }
             else {
-                switch ($status) {
-                    case 'in_progress':
-                        return Task::with(['milestone', 'user'])->where('user_id', $userId)->where('status', 'in_progress')->get();
-                    case 'completed':
-                        return Task::with(['milestone', 'user'])->where('user_id', $userId)->where('status', 'completed')->get();
-                    case 'pending':
-                        return Task::with(['milestone', 'user'])->where('user_id', $userId)->where('status', 'pending')->get();
-                    default:
-                        return Task::with(['milestone', 'user'])->where('user_id', $userId)->get();
-                }
+
+                return Task::with(['milestone', 'user'])->where('user_id', $userId)->get();
             }
         });
+
+        // Filter tasks by status if provided
+        if ($status) {
+            $tasks = $tasks->filter(function ($task) use ($status) {
+                return $task->status === $status;
+            });
+        }
 
         // Convert to resources when returning
         return TaskResource::collection($tasks);
@@ -125,10 +113,20 @@ class TaskController extends Controller
     public function update(UpdateTaskRequest $request, $task)
     {
         $taskInstance = Task::findOrFail($task);
+        $wasCompleted = $taskInstance->status === 'completed';
 
         // Update the task with the validated data
         $taskInstance->update($request->validated());
         $taskInstance = $taskInstance->fresh()->load(['milestone', 'user']);
+
+        // Fire TaskCompleted event if task was just completed
+        if (!$wasCompleted && $taskInstance->status === 'completed') {
+            Log::info('Dispatching TaskCompleted event from update method', [
+                'task_id' => $taskInstance->id,
+                'user_id' => $taskInstance->user_id,
+            ]);
+            TaskCompleted::dispatch($taskInstance);
+        }
 
         // Update the task in cache
         $this->updateTaskInCache($taskInstance);
@@ -207,11 +205,26 @@ class TaskController extends Controller
         $taskInstance = Task::findOrFail($task);
 
         if (request()->user('api')->can('update', $taskInstance)) {
-            $taskInstance->update(['status' => 'completed', 'completed_at' => now()]);
+            $wasCompleted = $taskInstance->status === 'completed';
+
+            // Update task directly without triggering model events that might fire TaskCompleted
+            $taskInstance->status = 'completed';
+            $taskInstance->completed_at = now();
+            $taskInstance->save();
+
             $taskInstance = $taskInstance->fresh()->load(['milestone', 'user']);
 
             // Update the task in cache
             $this->updateTaskInCache($taskInstance);
+
+            // Fire TaskCompleted event if task was just completed
+            if (!$wasCompleted) {
+                Log::info('Dispatching TaskCompleted event from complete method', [
+                    'task_id' => $taskInstance->id,
+                    'user_id' => $taskInstance->user_id,
+                ]);
+                TaskCompleted::dispatch($taskInstance);
+            }
 
             // get tenantId from x-tenant-id header
             $tenantId = request()->header('x-tenant-id');

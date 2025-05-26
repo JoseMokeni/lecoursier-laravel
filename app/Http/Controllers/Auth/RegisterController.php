@@ -8,6 +8,7 @@ use App\Mail\WelcomeUserMail;
 use App\Models\Company;
 use App\Models\Tenant;
 use App\Models\User;
+use Database\Seeders\BadgeSeeder;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Log;
@@ -55,6 +56,9 @@ class RegisterController extends Controller
 
         // Switch to the tenant environment
         tenancy()->initialize($tenant);
+
+        // seed the tenant database with BadgeSeeder
+        (new BadgeSeeder())->run();
 
         // Save the default password before encryption
         $defaultPassword = $validated['code'];

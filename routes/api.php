@@ -69,6 +69,17 @@ Route::middleware(['api.tenant.context', 'api.active.tenant', 'api.tenant.subscr
         Route::post('/tasks/{task}/start', [TaskController::class, 'start'])
             ->middleware('api.auth');
 
+        // Badge routes
+        Route::middleware('api.auth')->group(function () {
+            Route::get('/badges', [\App\Http\Controllers\Api\BadgeController::class, 'index']);
+            Route::get('/badges/earned', [\App\Http\Controllers\Api\BadgeController::class, 'earned']);
+            Route::get('/badges/recent', [\App\Http\Controllers\Api\BadgeController::class, 'recent']);
+            Route::get('/badges/categories', [\App\Http\Controllers\Api\BadgeController::class, 'categories']);
+            Route::get('/badges/{badge}', [\App\Http\Controllers\Api\BadgeController::class, 'show']);
+            Route::get('/user/stats', [\App\Http\Controllers\Api\BadgeController::class, 'stats']);
+            Route::get('/leaderboard', [\App\Http\Controllers\Api\BadgeController::class, 'leaderboard']);
+        });
+
     });
 
 Route::get('/health', function () {

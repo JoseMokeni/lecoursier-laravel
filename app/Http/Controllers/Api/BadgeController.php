@@ -115,7 +115,7 @@ class BadgeController extends Controller
 
         $recentBadges = $user->userBadges()
             ->with('badge')
-            ->recent()
+            ->recentlyEarned()
             ->get();
 
         return response()->json([
@@ -183,10 +183,10 @@ class BadgeController extends Controller
 
         switch ($period) {
             case 'month':
-                $query->orderBy('user_stats.points_this_month', 'desc');
+                $query->orderBy('user_stats.monthly_points', 'desc');
                 break;
             case 'week':
-                $query->orderBy('user_stats.points_this_week', 'desc');
+                $query->orderBy('user_stats.weekly_points', 'desc');
                 break;
             default:
                 $query->orderBy('user_stats.total_points', 'desc');
@@ -198,8 +198,8 @@ class BadgeController extends Controller
             'data' => $users->map(function ($user, $index) use ($period) {
                 $stats = $user->stats;
                 $points = match($period) {
-                    'month' => $stats->points_this_month,
-                    'week' => $stats->points_this_week,
+                    'month' => $stats->monthly_points,
+                    'week' => $stats->weekly_points,
                     default => $stats->total_points,
                 };
 

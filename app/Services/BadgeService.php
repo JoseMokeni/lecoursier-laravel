@@ -45,7 +45,7 @@ class BadgeService
         // Add points to user stats
         $this->addPointsToUser($user, $badge->points);
 
-        $tenantId = session('tenant_id');
+        $tenantId = tenancy()->tenant->id;
 
         // Fire badge earned event
         event(new BadgeEarned($user, $badge, $tenantId));

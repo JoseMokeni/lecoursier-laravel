@@ -7,6 +7,7 @@ use App\Models\User;
 use App\Models\UserBadge;
 use App\Models\UserStats;
 use App\Events\BadgeEarned;
+use App\Jobs\SendFcmNotification;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\Log;
 
@@ -49,6 +50,9 @@ class BadgeService
 
         // Fire badge earned event
         event(new BadgeEarned($user, $badge, $tenantId));
+
+        // Send FCM notification
+        SendFcmNotification::dispatch($user->id, 'Nouveau badge gagné !', 'Vous avez gagné le badge ' . $badge->name . ' !');
 
         Log::info("Badge awarded", [
             'user_id' => $user->id,

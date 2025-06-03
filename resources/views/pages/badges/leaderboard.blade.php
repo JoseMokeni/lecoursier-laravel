@@ -248,18 +248,18 @@
                                                 <div class="flex items-center">
                                                     <i class="fas fa-star text-yellow-500 mr-2"></i>
                                                     <span
-                                                        class="text-lg font-semibold text-gray-900">{{ number_format($user->userStats->total_points ?? 0) }}</span>
+                                                        class="text-lg font-semibold text-gray-900">{{ number_format($user->stats->total_points ?? 0) }}</span>
                                                 </div>
                                             </td>
                                             <td class="px-6 py-4 whitespace-nowrap">
                                                 <span
                                                     class="inline-flex items-center px-3 py-1 rounded-full text-sm font-medium bg-blue-100 text-blue-800">
-                                                    Level {{ $user->userStats->level ?? 1 }}
+                                                    Level {{ $user->stats->level ?? 1 }}
                                                 </span>
                                             </td>
                                             <td class="px-6 py-4 whitespace-nowrap">
                                                 <span
-                                                    class="text-sm font-medium text-gray-900">{{ $user->badges_count ?? 0 }}
+                                                    class="text-sm font-medium text-gray-900">{{ $user->userBadges->count() ?? 0 }}
                                                     badges</span>
                                             </td>
                                         </tr>
@@ -344,21 +344,24 @@
                                             </td>
                                             <td class="px-6 py-4 whitespace-nowrap">
                                                 <span
-                                                    class="text-sm text-gray-600">{{ number_format($user->userStats->total_points ?? 0) }}
+                                                    class="text-sm text-gray-600">{{ number_format($user->stats->total_points ?? 0) }}
                                                     pts</span>
                                             </td>
                                             <td class="px-6 py-4 whitespace-nowrap">
                                                 <div class="flex flex-wrap gap-1">
-                                                    @foreach ($user->badges->take(3) as $badge)
+                                                    @foreach ($user->userBadges->take(3) as $userBadge)
                                                         <span
-                                                            class="inline-flex items-center px-2 py-1 rounded text-xs font-medium bg-{{ $badge->color ?? 'gray' }}-100 text-{{ $badge->color ?? 'gray' }}-800">
-                                                            {{ $badge->name }}
+                                                            class="inline-flex items-center px-2 py-1 rounded text-xs font-medium bg-gray-100 text-gray-800">
+                                                            {{ $userBadge->badge->name }}
                                                         </span>
                                                     @endforeach
-                                                    @if ($user->badges->count() > 3)
+                                                    @if ($user->userBadges->count() > 3)
                                                         <span
-                                                            class="text-xs text-gray-500">+{{ $user->badges->count() - 3 }}
+                                                            class="text-xs text-gray-500">+{{ $user->userBadges->count() - 3 }}
                                                             more</span>
+                                                    @endif
+                                                    @if ($user->userBadges->count() == 0)
+                                                        <span class="text-xs text-gray-400">No badges yet</span>
                                                     @endif
                                                 </div>
                                             </td>
@@ -439,18 +442,18 @@
                                                 <div class="flex items-center">
                                                     <i class="fas fa-check-circle text-green-500 mr-2"></i>
                                                     <span
-                                                        class="text-lg font-semibold text-gray-900">{{ $user->userStats->tasks_completed ?? 0 }}</span>
+                                                        class="text-lg font-semibold text-gray-900">{{ $user->stats->total_tasks_completed ?? 0 }}</span>
                                                 </div>
                                             </td>
                                             <td class="px-6 py-4 whitespace-nowrap">
                                                 @php
                                                     $total =
-                                                        ($user->userStats->tasks_completed ?? 0) +
-                                                        ($user->userStats->tasks_created ?? 0);
+                                                        ($user->stats->total_tasks_completed ?? 0) +
+                                                        ($user->stats->total_tasks_completed ?? 0);
                                                     $rate =
                                                         $total > 0
                                                             ? round(
-                                                                (($user->userStats->tasks_completed ?? 0) / $total) *
+                                                                (($user->stats->total_tasks_completed ?? 0) / $total) *
                                                                     100,
                                                             )
                                                             : 0;
@@ -465,7 +468,7 @@
                                             </td>
                                             <td class="px-6 py-4 whitespace-nowrap">
                                                 <span
-                                                    class="text-sm text-gray-600">{{ number_format($user->userStats->total_points ?? 0) }}
+                                                    class="text-sm text-gray-600">{{ number_format($user->stats->total_points ?? 0) }}
                                                     pts</span>
                                             </td>
                                         </tr>
@@ -544,18 +547,18 @@
                                             <td class="px-6 py-4 whitespace-nowrap">
                                                 <span
                                                     class="inline-flex items-center px-3 py-1 rounded-full text-lg font-bold bg-purple-100 text-purple-800">
-                                                    {{ $user->userStats->level ?? 1 }}
+                                                    {{ $user->stats->level ?? 1 }}
                                                 </span>
                                             </td>
                                             <td class="px-6 py-4 whitespace-nowrap">
                                                 <span
-                                                    class="text-sm font-medium text-gray-900">{{ number_format($user->userStats->experience ?? 0) }}
+                                                    class="text-sm font-medium text-gray-900">{{ number_format($user->stats->experience_points ?? 0) }}
                                                     XP</span>
                                             </td>
                                             <td class="px-6 py-4 whitespace-nowrap">
                                                 @php
-                                                    $currentLevel = $user->userStats->level ?? 1;
-                                                    $experience = $user->userStats->experience ?? 0;
+                                                    $currentLevel = $user->stats->level ?? 1;
+                                                    $experience = $user->stats->experience_points ?? 0;
                                                     $currentLevelXP = $currentLevel * 1000; // Assuming 1000 XP per level
                                                     $nextLevelXP = ($currentLevel + 1) * 1000;
                                                     $progress =
@@ -606,11 +609,11 @@
                         // Add active class to selected tab
                         const activeTab = document.querySelector(`[data-tab="${type}"]`);
                         activeTab.classList.add('border-blue-500', 'text-blue-600', 'bg-blue-50');
-                        activeTab.classList.remove('border-transparent', 'text-gray-500'); < /div> <
-                        /main>
+                        activeTab.classList.remove('border-transparent', 'text-gray-500'); < /div> < /
+                        main >
 
-                        <
-                        script >
+                            <
+                            script >
                             // Mobile menu toggle
                             document.addEventListener('DOMContentLoaded', function() {
                                 const mobileMenuButton = document.querySelector('.mobile-menu-button');

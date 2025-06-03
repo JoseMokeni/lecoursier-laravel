@@ -9,6 +9,7 @@ use App\Models\UserBadge;
 use App\Services\BadgeService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Log;
 
 class BadgeController extends Controller
 {
@@ -231,7 +232,8 @@ class BadgeController extends Controller
             default => 'total_points',
         };
 
-        $pointsLeaderboard = User::with('stats')
+        $pointsLeaderboard = User::with(['stats'])
+            ->withCount(['userBadges as badges_count'])
             ->join('user_stats', 'users.id', '=', 'user_stats.user_id')
             ->orderBy("user_stats.{$pointsColumn}", 'desc')
             ->select('users.*')
@@ -239,15 +241,18 @@ class BadgeController extends Controller
             ->get();
 
         // Badges leaderboard
-        $badgesLeaderboard = User::with('stats')
-            ->whereHas('badges')
-            ->withCount('badges')
+        $badgesLeaderboard = User::with(['stats', 'userBadges.badge' => function ($query) {
+                $query->latest();
+            }])
+            ->whereHas('userBadges')
+            ->withCount(['userBadges as badges_count'])
             ->orderBy('badges_count', 'desc')
             ->take(50)
             ->get();
 
         // Tasks leaderboard
-        $tasksLeaderboard = User::with('stats')
+        $tasksLeaderboard = User::with(['stats'])
+            ->withCount(['userBadges as badges_count'])
             ->join('user_stats', 'users.id', '=', 'user_stats.user_id')
             ->orderBy('user_stats.total_tasks_completed', 'desc')
             ->select('users.*')
@@ -255,7 +260,8 @@ class BadgeController extends Controller
             ->get();
 
         // Level leaderboard
-        $levelLeaderboard = User::with('stats')
+        $levelLeaderboard = User::with(['stats'])
+            ->withCount(['userBadges as badges_count'])
             ->join('user_stats', 'users.id', '=', 'user_stats.user_id')
             ->orderBy('user_stats.level', 'desc')
             ->select('users.*')

@@ -38,14 +38,6 @@ class User extends Authenticatable
     ];
 
     /**
-     * Get the rewards for the user.
-     */
-    public function rewards()
-    {
-        return $this->hasMany(Reward::class);
-    }
-
-    /**
      * Get the tasks assigned to the user.
      */
     public function tasks()

@@ -15,6 +15,7 @@ This document provides a comprehensive overview of the test suite for the Le Cou
     -   Page Load Tests (Pest)
     -   Task History Controller Tests
     -   Dashboard Controller Tests
+    -   Badge System Tests
 -   Unit Tests
     -   Contact Form Tests
     -   Task Policy Tests
@@ -248,6 +249,103 @@ The custom `DatabaseRefresh` trait is used to manage test databases, particularl
 | Test Case                                 | Description                                      | Assertions                                 |
 | ----------------------------------------- | ------------------------------------------------ | ------------------------------------------ |
 | `test_dashboard_displays_task_statistics` | Verifies dashboard shows correct task statistics | View loads, statistics match created tasks |
+
+### Badge System Tests
+
+The Badge System tests comprehensively cover the gamification features of the application, including badge awarding, user statistics tracking, leaderboards, and API endpoints.
+
+#### API Badge Controller Tests (`tests/Feature/Api/BadgeControllerTest.php`)
+
+| Test Case                              | Description                                                | Assertions                                                               |
+| -------------------------------------- | ---------------------------------------------------------- | ------------------------------------------------------------------------ |
+| `can_get_all_badges_with_progress`     | Tests retrieving all badges with user progress             | Returns 200, only active badges shown, correct structure with progress   |
+| `can_filter_badges_by_category`        | Tests filtering badges by category (e.g., task_completion) | Returns 200, all badges match requested category                         |
+| `can_filter_badges_by_earned_status`   | Tests filtering badges by earned status (true/false)       | Returns 200, earned filter correctly separates earned vs unearned badges |
+| `can_get_earned_badges`                | Tests retrieving badges earned by authenticated user       | Returns 200, correct earned badges structure, ordered by latest first    |
+| `can_filter_earned_badges_by_category` | Tests filtering earned badges by category                  | Returns 200, only earned badges in specified category                    |
+| `can_limit_earned_badges`              | Tests limiting number of earned badges returned            | Returns 200, respects limit parameter, correct count                     |
+| `can_get_recent_badges`                | Tests retrieving badges earned within last 7 days          | Returns 200, only badges earned within time window                       |
+| `can_get_user_stats`                   | Tests retrieving authenticated user's statistics           | Returns 200, complete user stats structure (level, points, tasks, etc.)  |
+| `returns_null_when_user_has_no_stats`  | Tests API response when user has no statistics             | Returns 200 with null data and appropriate message                       |
+| `can_get_badge_categories`             | Tests retrieving available badge categories                | Returns 200, categories with names and badge counts                      |
+| `can_get_leaderboard_all_time`         | Tests retrieving all-time leaderboard                      | Returns 200, ranked users with stats, correct leaderboard structure      |
+| `can_get_leaderboard_monthly`          | Tests retrieving monthly leaderboard                       | Returns 200, filtered by month period                                    |
+| `can_get_leaderboard_weekly`           | Tests retrieving weekly leaderboard                        | Returns 200, filtered by week period                                     |
+| `can_limit_leaderboard_results`        | Tests limiting leaderboard results                         | Returns 200, respects limit parameter                                    |
+| `can_show_specific_badge`              | Tests retrieving details for a specific badge              | Returns 200, badge details with earned status and statistics             |
+| `shows_earned_badge_details`           | Tests showing badge details when user has earned it        | Returns 200, includes earned status and progress information             |
+| `returns_404_for_nonexistent_badge`    | Tests requesting non-existent badge                        | Returns 404 status                                                       |
+| `requires_authentication`              | Tests that badge endpoints require authentication          | Returns 401 for unauthenticated requests                                 |
+
+#### API Badge System Integration Tests (`tests/Feature/Api/BadgeSystemTest.php`)
+
+| Test Case                                       | Description                                            | Assertions                                                               |
+| ----------------------------------------------- | ------------------------------------------------------ | ------------------------------------------------------------------------ |
+| `task_completion_fires_event_and_creates_stats` | Tests task completion event triggers stats creation    | Task completed, user stats created, event listener executed              |
+| `user_stats_are_created_when_completing_task`   | Tests user stats creation on task completion           | Task completed, stats created with correct values, includes badge points |
+| `badge_is_awarded_when_criteria_met`            | Tests automatic badge awarding when criteria satisfied | Badge awarded automatically, user has badge in collection                |
+| `can_get_user_badges_via_api`                   | Tests retrieving user badges through API               | Returns 200, correct badge structure with earned information             |
+| `can_get_user_stats_via_api`                    | Tests retrieving user statistics through API           | Returns 200, complete stats including level, points, tasks, streaks      |
+| `can_get_all_badges_with_progress`              | Tests retrieving all badges with user progress info    | Returns 200, badges with progress indicators, earned status              |
+| `can_get_leaderboard`                           | Tests leaderboard functionality with multiple users    | Returns 200, properly ranked users, correct statistics                   |
+
+#### Web Badge Controller Tests (`tests/Feature/Web/BadgeControllerTest.php`)
+
+| Test Case                                                 | Description                                           | Assertions                                             |
+| --------------------------------------------------------- | ----------------------------------------------------- | ------------------------------------------------------ |
+| `index_displays_badges_dashboard_for_authenticated_user`  | Tests badge dashboard loads for regular users         | Page loads with correct view and all required data     |
+| `index_displays_badges_dashboard_for_authenticated_admin` | Tests badge dashboard loads for admin users           | Page loads with correct view for admin perspective     |
+| `index_redirects_unauthenticated_users`                   | Tests unauthenticated access redirects to login       | Redirects to login page                                |
+| `index_filters_badges_by_category`                        | Tests category filtering on badge index               | Filters applied correctly, view has category parameter |
+| `index_filters_badges_by_rarity`                          | Tests rarity filtering on badge index                 | Filters applied correctly, view has rarity parameter   |
+| `index_searches_badges_by_name`                           | Tests search functionality on badge index             | Search applied correctly, view has search parameter    |
+| `index_applies_multiple_filters`                          | Tests combining multiple filters on badge index       | All filters applied simultaneously                     |
+| `show_displays_badge_details_for_authenticated_user`      | Tests individual badge detail page for users          | Page loads with badge details and related statistics   |
+| `show_displays_badge_details_for_authenticated_admin`     | Tests individual badge detail page for admins         | Page loads with full admin badge details               |
+| `show_redirects_unauthenticated_users`                    | Tests unauthenticated access to badge details         | Redirects to login                                     |
+| `show_returns_404_for_nonexistent_badge`                  | Tests accessing non-existent badge                    | Returns 404 status                                     |
+| `user_progress_displays_user_progression_dashboard`       | Tests user progression dashboard                      | Page loads with user stats and progression data        |
+| `user_progress_redirects_unauthenticated_users`           | Tests unauthenticated access to user progress         | Redirects to login                                     |
+| `user_progress_searches_users_by_name`                    | Tests searching users by name in progression view     | Search parameter applied correctly                     |
+| `user_progress_searches_users_by_email`                   | Tests searching users by email in progression view    | Search parameter applied correctly                     |
+| `user_progress_searches_users_by_username`                | Tests searching users by username in progression view | Search parameter applied correctly                     |
+| `user_progress_sorts_by_badges_count`                     | Tests sorting user progression by badge count         | Sort parameter applied correctly                       |
+| `user_progress_sorts_by_points`                           | Tests sorting user progression by points              | Sort parameter applied correctly                       |
+| `user_progress_sorts_by_level`                            | Tests sorting user progression by level               | Sort parameter applied correctly                       |
+| `user_progress_sorts_by_tasks`                            | Tests sorting user progression by task count          | Sort parameter applied correctly                       |
+| `user_progress_defaults_to_badges_count_sorting`          | Tests default sorting for user progression            | Default sort by badges count applied                   |
+| `leaderboard_displays_leaderboard_dashboard`              | Tests leaderboard dashboard                           | Page loads with leaderboard data and filters           |
+| `leaderboard_redirects_unauthenticated_users`             | Tests unauthenticated access to leaderboard           | Redirects to login                                     |
+| `leaderboard_filters_by_period_all`                       | Tests filtering leaderboard by all-time period        | Period filter applied correctly                        |
+| `leaderboard_filters_by_period_month`                     | Tests filtering leaderboard by monthly period         | Period filter applied correctly                        |
+| `leaderboard_filters_by_period_week`                      | Tests filtering leaderboard by weekly period          | Period filter applied correctly                        |
+| `leaderboard_filters_by_type_points`                      | Tests filtering leaderboard by points type            | Type filter applied correctly                          |
+| `leaderboard_filters_by_type_badges`                      | Tests filtering leaderboard by badges type            | Type filter applied correctly                          |
+| `leaderboard_filters_by_type_tasks`                       | Tests filtering leaderboard by tasks type             | Type filter applied correctly                          |
+| `leaderboard_defaults_to_all_period_and_points_type`      | Tests default leaderboard filters                     | Default period (all) and type (points) applied         |
+| `leaderboard_combines_period_and_type_filters`            | Tests combining period and type filters               | Both filters applied simultaneously                    |
+
+**Badge System Features Tested:**
+
+1. **Badge Management**: Creation, filtering, categorization, and rarity levels
+2. **User Statistics**: Points, levels, experience, streaks, completion rates
+3. **Badge Awarding**: Automatic awarding based on criteria, progress tracking
+4. **Leaderboards**: All-time, monthly, weekly rankings by points/badges/tasks
+5. **API Endpoints**: Complete REST API for mobile app integration
+6. **Web Interface**: Dashboard views for users and admins
+7. **Authentication**: Proper access control and tenant isolation
+8. **Real-time Updates**: Event-driven badge awarding on task completion
+9. **Performance Tracking**: User progression analytics and statistics
+10. **Search & Filtering**: Advanced filtering and search capabilities
+
+**Test Coverage Summary:**
+
+-   **18 API test methods** covering all badge endpoints and functionality
+-   **7 integration tests** verifying the complete badge awarding workflow
+-   **27 web interface tests** ensuring proper UI behavior and access control
+-   **Total: 52 comprehensive badge system tests**
+
+The Badge System tests ensure complete coverage of the gamification features, from basic CRUD operations to complex business logic like automatic badge awarding, leaderboard calculations, and user progression tracking. All tests use proper tenant isolation and authentication verification.
 
 ## Unit Tests
 

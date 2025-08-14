@@ -38,19 +38,37 @@ class User extends Authenticatable
     ];
 
     /**
-     * Get the rewards for the user.
-     */
-    public function rewards()
-    {
-        return $this->hasMany(Reward::class);
-    }
-
-    /**
      * Get the tasks assigned to the user.
      */
     public function tasks()
     {
         return $this->hasMany(Task::class);
+    }
+
+    /**
+     * Get the badges earned by the user.
+     */
+    public function badges()
+    {
+        return $this->belongsToMany(Badge::class, 'user_badges')
+            ->withPivot('earned_at', 'progress')
+            ->withTimestamps();
+    }
+
+    /**
+     * Get the user's statistics.
+     */
+    public function stats()
+    {
+        return $this->hasOne(UserStats::class);
+    }
+
+    /**
+     * Get the user's badge earnings.
+     */
+    public function userBadges()
+    {
+        return $this->hasMany(UserBadge::class);
     }
 
     /**
